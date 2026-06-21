@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@theme {
+  /* Vos couleurs personnalisées pour SeenIt. */
+  --color-slate-bg: #0f172a;
+  --color-card-bg: #1e293b;
+  --color-accent-gold: #f59e0b;
+
+  /* Vos polices si vous les ajoutez plus tard */
+  --font-display: "Outfit", sans-serif;
+}
