@@ -38,7 +38,7 @@ const COUP_DE_COEUR_FILMS = [
 ];
 
 const USER_STATS = {
-  name: 'Bouchra',
+  name: 'Moundir',
   totalFilms: 5,
   favoriteGenre: 'Sci-Fi',
   favoriteActor: 'M. McConaughey',
