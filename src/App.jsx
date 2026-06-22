@@ -12,6 +12,14 @@ export default function App() {
     { id: 'matrix',   name: 'Sci-Fi',        bg: '#022C22', card: '#064E3B', accent: '#10B981' },
     { id: 'noir',     name: 'Film Noir',     bg: '#0A0A0A', card: '#171717', accent: '#F5F5F5' },
     { id: 'vintage',  name: 'Pellicule',     bg: '#292524', card: '#44403C', accent: '#D97706' },
+    // Le nouveau thème Iconic
+    { 
+      id: 'iconic',   
+      name: 'Iconic',        
+      bg: '#F5F5F0',      // Un blanc cassé / Ivoire très clair (Marbre)
+      card: '#E5E5E0',    // Un gris très léger pour faire ressortir les cartes
+      accent: '#B8860B'   // Un doré foncé (Dark Goldenrod) pour le côté statuesque
+    },
   ];
 
   const [currentTheme, setCurrentTheme] = useState(themes[0]);
