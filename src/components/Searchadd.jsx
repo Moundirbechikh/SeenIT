@@ -5,6 +5,20 @@ import {
   Sparkles, AlertCircle, Loader2
 } from 'lucide-react';
 
+// --- HELPER : classes texte adaptées au thème ---
+function useThemeStyles(isLight) {
+  return {
+    textPrimary:   { color: 'var(--text-primary)' },
+    textSecondary: { color: 'var(--text-secondary)' },
+    textMuted:     { color: 'var(--text-muted)' },
+    textAccent:    { color: 'var(--accent-color)' },
+    bgCard:        { backgroundColor: 'var(--card-color)' },
+    bgMain:        { backgroundColor: 'var(--bg-color)' },
+    borderSubtle:  { borderColor: 'var(--border-subtle)' },
+    borderMedium:  { borderColor: 'var(--border-medium)' },
+  };
+}
+
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 const TMDB_API_KEY = 'TON_API_KEY_ICI'; // à remplacer
 const TMDB_BASE    = 'https://api.themoviedb.org/3';
@@ -12,36 +26,40 @@ const TMDB_IMG     = 'https://image.tmdb.org/t/p/w500';
 const TMDB_IMG_SM  = 'https://image.tmdb.org/t/p/w200';
 
 const SECTIONS = [
-  { key: 'elite', label: 'Élite',  cls: 'bg-purple-600 text-white border-purple-400/40',         desc: 'Un chef-d\'œuvre. À revoir absolument.' },
+  { key: 'elite', label: 'Élite',  cls: 'bg-purple-600 text-white border-purple-400/40',        desc: 'Un chef-d\'œuvre. À revoir absolument.' },
   { key: 'moyen', label: 'Moyen',  cls: 'bg-amber-500 text-slate-950 border-amber-300/40',       desc: 'Correct. Pas de regrets, pas d\'ovation.' },
-  { key: 'navet', label: 'Navet',  cls: 'bg-rose-600 text-white border-rose-400/40',              desc: 'Tu t\'es sacrifié. Noté pour ne plus recommencer.' },
+  { key: 'navet', label: 'Navet',  cls: 'bg-rose-600 text-white border-rose-400/40',             desc: 'Tu t\'es sacrifié. Noté pour ne plus recommencer.' },
 ];
 
 // ─── COMPOSANT : Étoiles interactives ────────────────────────────────────────
-function StarPicker({ value, onChange }) {
+function StarPicker({ value, onChange, ts }) {
   const [hovered, setHovered] = useState(0);
   return (
     <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map(i => (
-        <button
-          key={i}
-          onMouseEnter={() => setHovered(i)}
-          onMouseLeave={() => setHovered(0)}
-          onClick={() => onChange(i)}
-          className="transition-transform duration-150 hover:scale-125"
-        >
-          <Star
-            size={28}
-            className={`transition-colors duration-150 ${
-              i <= (hovered || value)
-                ? 'fill-[var(--accent-color)] text-[var(--accent-color)] drop-shadow-[0_0_8px_var(--accent-color)]'
-                : 'text-white/20'
-            }`}
-          />
-        </button>
-      ))}
+      {[1, 2, 3, 4, 5].map(i => {
+        const isActive = i <= (hovered || value);
+        return (
+          <button
+            key={i}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(0)}
+            onClick={() => onChange(i)}
+            className="transition-transform duration-150 hover:scale-125"
+          >
+            <Star
+              size={28}
+              className="transition-colors duration-150"
+              style={{
+                color: isActive ? 'var(--accent-color)' : 'var(--border-medium)',
+                fill: isActive ? 'var(--accent-color)' : 'transparent',
+                filter: isActive ? 'drop-shadow(0 0 8px var(--accent-color))' : 'none'
+              }}
+            />
+          </button>
+        );
+      })}
       {value > 0 && (
-        <span className="ml-2 text-[11px] font-black text-white/40 uppercase tracking-widest">
+        <span className="ml-2 text-[11px] font-black uppercase tracking-widest" style={ts.textMuted}>
           {['', 'Catastrophe', 'Décevant', 'Correct', 'Bien', 'Chef-d\'œuvre'][value]}
         </span>
       )}
@@ -50,7 +68,10 @@ function StarPicker({ value, onChange }) {
 }
 
 // ─── COMPOSANT PRINCIPAL ─────────────────────────────────────────────────────
-export default function SearchAdd({ onBack, onFilmAdded }) {
+export default function SearchAdd({ onBack, onFilmAdded, currentTheme }) {
+  const isLight = currentTheme?.isLight || false;
+  const ts = useThemeStyles(isLight);
+
   // Étapes : 'search' → 'form'
   const [step,         setStep]         = useState('search');
   const [query,        setQuery]        = useState('');
@@ -131,15 +152,15 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
   // ── STEP : SEARCH ──────────────────────────────────────────────────────────
   if (step === 'search') return (
     <div
-      className="flex-1 w-full relative min-h-screen"
-      style={{ backgroundColor: 'var(--bg-color, #060606)' }}
+      className="flex-1 w-full relative min-h-screen transition-colors duration-700"
+      style={ts.bgMain}
     >
       {/* Filigrane */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <Popcorn className="absolute top-[8%] right-[4%] opacity-[0.04] rotate-12"
-          style={{ color: 'var(--accent-color)', width: 200, height: 200 }} strokeWidth={1} />
-        <Film className="absolute bottom-[15%] left-[2%] opacity-[0.03] -rotate-6"
-          style={{ color: 'white', width: 220, height: 220 }} strokeWidth={1} />
+        <Popcorn className="absolute top-[8%] right-[4%] rotate-12"
+          style={{ color: 'var(--accent-color)', width: 200, height: 200, opacity: isLight ? 0.06 : 0.04 }} strokeWidth={1} />
+        <Film className="absolute bottom-[15%] left-[2%] -rotate-6"
+          style={{ color: isLight ? 'var(--text-muted)' : 'white', width: 220, height: 220, opacity: isLight ? 0.04 : 0.03 }} strokeWidth={1} />
       </div>
 
       <div className="relative z-10 max-w-[800px] mx-auto px-6 py-10">
@@ -148,30 +169,29 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
         <div className="mb-10">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-slate-500 hover:text-white
-              text-[11px] font-black uppercase tracking-widest mb-6
-              transition-colors duration-200 group"
+            className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest mb-6 transition-colors duration-200 group w-fit"
+            style={ts.textMuted}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
           >
             <ChevronLeft size={14} className="transition-transform duration-200 group-hover:-translate-x-1" />
             Retour au dashboard
           </button>
-          <h1 className="text-4xl lg:text-6xl font-black tracking-tighter text-white
-            uppercase leading-[0.9] mb-3">
+          <h1 className="text-4xl lg:text-6xl font-black tracking-tighter uppercase leading-[0.9] mb-3" style={ts.textPrimary}>
             Quel film<br />
             <span style={{ color: 'var(--accent-color)' }}>ce soir ?</span>
           </h1>
-          <p className="text-slate-500 text-sm font-medium">
+          <p className="text-sm font-medium" style={ts.textSecondary}>
             Tape un titre, on s'occupe du reste.
           </p>
         </div>
 
         {/* Barre de recherche */}
         <div
-          className="flex items-center gap-4 rounded-2xl border px-6 py-4 mb-8
-            transition-all duration-300 focus-within:shadow-2xl"
+          className="flex items-center gap-4 rounded-2xl border px-6 py-4 mb-8 transition-all duration-300 focus-within:shadow-2xl"
           style={{
-            backgroundColor: 'var(--card-color, #111)',
-            borderColor: 'color-mix(in srgb, var(--accent-color) 30%, rgba(255,255,255,0.1))',
+            backgroundColor: 'var(--card-color)',
+            borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)',
             boxShadow: `0 0 0 1px color-mix(in srgb, var(--accent-color) 20%, transparent)`,
           }}
         >
@@ -184,12 +204,14 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Interstellar, Matrix, Le Dîner de Cons…"
-            className="flex-1 bg-transparent text-white text-lg font-bold
-              placeholder:text-white/20 outline-none caret-[var(--accent-color)]"
+            className="flex-1 bg-transparent text-lg font-bold outline-none caret-[var(--accent-color)] placeholder-[color:var(--text-muted)]"
+            style={ts.textPrimary}
           />
           {query && (
             <button onClick={() => { setQuery(''); setResults([]); }}
-              className="text-white/30 hover:text-white transition-colors duration-200">
+              className="transition-colors duration-200" style={ts.textMuted}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
               <X size={18} />
             </button>
           )}
@@ -198,36 +220,33 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
         {/* Résultats */}
         {results.length > 0 && (
           <div className="flex flex-col gap-3">
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600 mb-1">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-1" style={ts.textMuted}>
               {results.length} résultat{results.length > 1 ? 's' : ''} TMDB
             </p>
             {results.map(film => (
               <button
                 key={film.id}
                 onClick={() => handleSelectFilm(film)}
-                className="flex items-center gap-5 rounded-xl border border-white/8 p-4
-                  hover:border-[var(--accent-color)]/40 transition-all duration-300
-                  group text-left hover:-translate-y-0.5 hover:shadow-xl"
-                style={{ backgroundColor: 'var(--card-color, #111)' }}
+                className="flex items-center gap-5 rounded-xl border p-4 transition-all duration-300 group text-left hover:-translate-y-0.5 hover:shadow-xl"
+                style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--accent-color) 40%, transparent)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
               >
                 {/* Miniature poster */}
-                <div className="w-14 h-20 rounded-lg overflow-hidden shrink-0
-                  border border-white/10 group-hover:border-[var(--accent-color)]/40
-                  transition-colors duration-300">
+                <div className="w-14 h-20 rounded-lg overflow-hidden shrink-0 border transition-colors duration-300 group-hover:border-[var(--accent-color)]"
+                  style={{ borderColor: 'var(--border-subtle)' }}>
                   {film.poster_path
                     ? <img src={`${TMDB_IMG_SM}${film.poster_path}`} alt={film.title}
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0
-                          transition-all duration-500" />
-                    : <div className="w-full h-full flex items-center justify-center bg-white/5">
-                        <Film size={20} className="text-white/20" />
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                    : <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: 'var(--border-subtle)' }}>
+                        <Film size={20} style={ts.textMuted} />
                       </div>
                   }
                 </div>
 
                 {/* Infos */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-black text-base uppercase tracking-tight
-                    truncate leading-none mb-1">
+                  <h3 className="font-black text-base uppercase tracking-tight truncate leading-none mb-1" style={ts.textPrimary}>
                     {film.title}
                   </h3>
                   <div className="flex items-center gap-2 mb-2">
@@ -237,29 +256,29 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
                     </span>
                     {film.vote_average > 0 && (
                       <>
-                        <span className="text-slate-700">·</span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        <span style={ts.textMuted}>·</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest" style={ts.textSecondary}>
                           TMDB {film.vote_average.toFixed(1)}/10
                         </span>
                       </>
                     )}
                   </div>
-                  <p className="text-slate-500 text-xs leading-relaxed line-clamp-2">
+                  <p className="text-xs leading-relaxed line-clamp-2" style={ts.textSecondary}>
                     {film.overview || 'Aucune description disponible.'}
                   </p>
                 </div>
 
                 {/* CTA */}
                 <div
-                  className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center
-                    border-2 border-white/10 group-hover:border-[var(--accent-color)]
-                    transition-all duration-300 group-hover:scale-110"
+                  className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 group-hover:scale-110"
                   style={{
+                    borderColor: 'var(--border-subtle)',
                     backgroundColor: 'color-mix(in srgb, var(--accent-color) 0%, transparent)',
                   }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
                 >
-                  <Sparkles size={16} className="text-white/30 group-hover:text-[var(--accent-color)]
-                    transition-colors duration-300" />
+                  <Sparkles size={16} className="transition-colors duration-300 group-hover:text-[var(--accent-color)]" style={{ color: 'var(--border-medium)' }} />
                 </div>
               </button>
             ))}
@@ -269,11 +288,11 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
         {/* État vide */}
         {!loading && query.trim().length >= 2 && results.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <AlertCircle size={40} className="text-white/10 mb-4" strokeWidth={1} />
-            <p className="text-white/20 font-black text-base uppercase tracking-wider">
+            <AlertCircle size={40} className="mb-4" style={{ color: 'var(--border-medium)' }} strokeWidth={1} />
+            <p className="font-black text-base uppercase tracking-wider" style={ts.textPrimary}>
               Aucun résultat pour "{query}"
             </p>
-            <p className="text-slate-700 text-xs mt-2">Vérifie l'orthographe ou essaie en anglais.</p>
+            <p className="text-xs mt-2" style={ts.textSecondary}>Vérifie l'orthographe ou essaie en anglais.</p>
           </div>
         )}
 
@@ -284,12 +303,12 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
   // ── STEP : FORM ────────────────────────────────────────────────────────────
   return (
     <div
-      className="flex-1 w-full relative min-h-screen"
-      style={{ backgroundColor: 'var(--bg-color, #060606)' }}
+      className="flex-1 w-full relative min-h-screen transition-colors duration-700"
+      style={ts.bgMain}
     >
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <Clapperboard className="absolute -bottom-10 -right-10 opacity-[0.03]"
-          style={{ color: 'white', width: 400, height: 400 }} strokeWidth={1} />
+        <Clapperboard className="absolute -bottom-10 -right-10"
+          style={{ color: isLight ? 'var(--text-muted)' : 'white', width: 400, height: 400, opacity: isLight ? 0.04 : 0.03 }} strokeWidth={1} />
       </div>
 
       <div className="relative z-10 max-w-[900px] mx-auto px-6 py-10">
@@ -297,9 +316,10 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
         {/* Retour */}
         <button
           onClick={() => setStep('search')}
-          className="flex items-center gap-2 text-slate-500 hover:text-white
-            text-[11px] font-black uppercase tracking-widest mb-8
-            transition-colors duration-200 group"
+          className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest mb-8 transition-colors duration-200 group w-fit"
+          style={ts.textMuted}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
         >
           <ChevronLeft size={14} className="transition-transform duration-200 group-hover:-translate-x-1" />
           Changer de film
@@ -310,16 +330,16 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
 
           {/* ── Poster ── */}
           <div className="shrink-0 w-[200px]">
-            <div className="w-full aspect-[2/3] rounded-xl overflow-hidden border border-white/10 shadow-2xl mb-4">
+            <div className="w-full aspect-[2/3] rounded-xl overflow-hidden border shadow-2xl mb-4" style={ts.borderSubtle}>
               {selectedFilm.poster_path
                 ? <img src={`${TMDB_IMG}${selectedFilm.poster_path}`} alt={selectedFilm.title}
                     className="w-full h-full object-cover" />
-                : <div className="w-full h-full flex items-center justify-center bg-white/5">
-                    <Film size={40} className="text-white/20" />
+                : <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: 'var(--border-subtle)' }}>
+                    <Film size={40} style={ts.textMuted} />
                   </div>
               }
             </div>
-            <p className="text-white font-black text-sm uppercase tracking-tight leading-none mb-1">
+            <p className="font-black text-sm uppercase tracking-tight leading-none mb-1" style={ts.textPrimary}>
               {selectedFilm.title}
             </p>
             <p className="text-[10px] font-bold uppercase tracking-widest"
@@ -341,24 +361,22 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
             </div>
 
             {/* Titre punch */}
-            <h2 className="text-3xl font-black tracking-tighter text-white uppercase leading-[0.9] mb-6">
+            <h2 className="text-3xl font-black tracking-tighter uppercase leading-[0.9] mb-6" style={ts.textPrimary}>
               C'était ta séance.<br />
               <span style={{ color: 'var(--accent-color)' }}>Verdict ?</span>
             </h2>
 
             {/* ─ Note ─ */}
             <div className="mb-6">
-              <label className="block text-[9px] font-black uppercase tracking-[0.2em]
-                text-slate-500 mb-3">
+              <label className="block text-[9px] font-black uppercase tracking-[0.2em] mb-3" style={ts.textMuted}>
                 Note / 5
               </label>
-              <StarPicker value={rating} onChange={setRating} />
+              <StarPicker value={rating} onChange={setRating} ts={ts} />
             </div>
 
             {/* ─ Catégorie ─ */}
             <div className="mb-6">
-              <label className="block text-[9px] font-black uppercase tracking-[0.2em]
-                text-slate-500 mb-3">
+              <label className="block text-[9px] font-black uppercase tracking-[0.2em] mb-3" style={ts.textMuted}>
                 Catégorie
               </label>
               <div className="flex gap-3 flex-wrap">
@@ -366,19 +384,18 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
                   <button
                     key={s.key}
                     onClick={() => setSection(s.key)}
-                    className={`flex flex-col items-start px-4 py-3 rounded-xl border
-                      transition-all duration-200 text-left
-                      ${section === s.key
-                        ? s.cls + ' shadow-lg scale-[1.03]'
-                        : 'border-white/10 text-slate-400 hover:border-white/20 bg-transparent'
-                      }`}
+                    className={`flex flex-col items-start px-4 py-3 rounded-xl border transition-all duration-200 text-left
+                      ${section === s.key ? s.cls + ' shadow-lg scale-[1.03]' : ''}`}
                     style={section === s.key
                       ? {}
-                      : { backgroundColor: 'var(--card-color, #111)' }}
+                      : { backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }
+                    }
+                    onMouseEnter={e => { if (section !== s.key) e.currentTarget.style.borderColor = 'var(--border-medium)' }}
+                    onMouseLeave={e => { if (section !== s.key) e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
                   >
                     <span className="font-black text-sm uppercase tracking-wider">{s.label}</span>
-                    <span className={`text-[9px] font-medium mt-0.5 leading-tight
-                      ${section === s.key ? 'opacity-70' : 'text-slate-600'}`}>
+                    <span className={`text-[9px] font-medium mt-0.5 leading-tight ${section === s.key ? 'opacity-70' : ''}`}
+                      style={section === s.key ? {} : ts.textMuted}>
                       {s.desc}
                     </span>
                   </button>
@@ -388,8 +405,7 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
 
             {/* ─ Commentaire ─ */}
             <div className="mb-6">
-              <label className="block text-[9px] font-black uppercase tracking-[0.2em]
-                text-slate-500 mb-3 flex items-center gap-1.5">
+              <label className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.2em] mb-3" style={ts.textMuted}>
                 <MessageSquare size={10} />
                 Ton journal · Optionnel
               </label>
@@ -398,12 +414,8 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
                 onChange={e => setComment(e.target.value)}
                 placeholder={`"Le générique a défilé, les lumières se rallument — mais le film, lui, mérite mieux que l'oubli. Donne-lui une critique..."`}
                 rows={3}
-                className="w-full rounded-xl border border-white/10 px-5 py-4
-                  text-white text-sm font-medium leading-relaxed
-                  placeholder:text-white/15 outline-none resize-none
-                  focus:border-[var(--accent-color)]/40 transition-colors duration-300
-                  caret-[var(--accent-color)]"
-                style={{ backgroundColor: 'var(--card-color, #111)' }}
+                className="w-full rounded-xl border px-5 py-4 text-sm font-medium leading-relaxed outline-none resize-none transition-colors duration-300 caret-[var(--accent-color)] placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)]"
+                style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
               />
             </div>
 
@@ -411,26 +423,22 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
             <div className="flex gap-3 mb-8">
               <button
                 onClick={() => setIsFav(v => !v)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border
-                  text-[11px] font-black uppercase tracking-wider transition-all duration-200
-                  ${isFav
-                    ? 'border-yellow-400/60 text-yellow-300 bg-yellow-400/10'
-                    : 'border-white/10 text-slate-500 hover:border-white/20 hover:text-slate-300'
-                  }`}
-                style={!isFav ? { backgroundColor: 'var(--card-color, #111)' } : {}}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[11px] font-black uppercase tracking-wider transition-all duration-200
+                  ${isFav ? 'border-yellow-400/60 text-yellow-500 bg-yellow-400/10' : ''}`}
+                style={!isFav ? { backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' } : {}}
+                onMouseEnter={e => { if (!isFav) e.currentTarget.style.borderColor = 'var(--border-medium)' }}
+                onMouseLeave={e => { if (!isFav) e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
               >
-                <Star size={14} className={isFav ? 'fill-yellow-400 text-yellow-400' : ''} />
+                <Star size={14} className={isFav ? 'fill-yellow-400 text-yellow-500' : ''} />
                 Favori
               </button>
               <button
                 onClick={() => setIsHeart(v => !v)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border
-                  text-[11px] font-black uppercase tracking-wider transition-all duration-200
-                  ${isHeart
-                    ? 'border-red-500/60 text-red-300 bg-red-500/10'
-                    : 'border-white/10 text-slate-500 hover:border-white/20 hover:text-slate-300'
-                  }`}
-                style={!isHeart ? { backgroundColor: 'var(--card-color, #111)' } : {}}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[11px] font-black uppercase tracking-wider transition-all duration-200
+                  ${isHeart ? 'border-red-500/60 text-red-500 bg-red-500/10' : ''}`}
+                style={!isHeart ? { backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' } : {}}
+                onMouseEnter={e => { if (!isHeart) e.currentTarget.style.borderColor = 'var(--border-medium)' }}
+                onMouseLeave={e => { if (!isHeart) e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
               >
                 <Star size={14} className={isHeart ? 'fill-red-500 text-red-500' : ''} />
                 Coup de ❤️
@@ -441,21 +449,19 @@ export default function SearchAdd({ onBack, onFilmAdded }) {
             <button
               onClick={handleSave}
               disabled={!canSave || saving || saved}
-              className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl
-                font-black text-base uppercase tracking-widest
-                transition-all duration-300
+              className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl font-black text-base uppercase tracking-widest transition-all duration-300
                 ${saved
                   ? 'bg-emerald-600 text-white border-2 border-emerald-400'
                   : canSave
-                    ? 'text-[var(--bg-color)] hover:-translate-y-1 hover:shadow-2xl active:scale-95'
-                    : 'border-2 border-white/10 text-white/20 cursor-not-allowed'
+                    ? 'hover:-translate-y-1 hover:shadow-2xl active:scale-95'
+                    : 'border-2 cursor-not-allowed'
                 }`}
               style={
                 saved
                   ? {}
                   : canSave
-                    ? { backgroundColor: 'var(--accent-color)' }
-                    : { backgroundColor: 'transparent' }
+                    ? { backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)', borderColor: 'transparent' }
+                    : { backgroundColor: 'transparent', borderColor: 'var(--border-subtle)', color: 'var(--border-medium)' }
               }
             >
               {saving

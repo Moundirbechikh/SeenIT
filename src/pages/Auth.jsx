@@ -3,9 +3,7 @@ import { Clapperboard, Ticket, Film } from 'lucide-react';
 import Connexion from '../components/Connexion';
 import Inscription from '../components/Inscription';
 
-
-
-export default function Auth() {
+export default function Auth({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
@@ -22,7 +20,7 @@ export default function Auth() {
           }`}
         >
           {isLogin ? (
-            <Connexion onSwitch={() => setIsLogin(false)} />
+            <Connexion onSwitch={() => setIsLogin(false)} onLogin={onLogin} />
           ) : (
             <Inscription onSwitch={() => setIsLogin(true)} />
           )}

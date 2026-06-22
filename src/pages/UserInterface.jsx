@@ -1,28 +1,18 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Dashboard from '../components/Dashbord';
 import SearchAdd from '../components/Searchadd';
 import Films     from './Films';
 
-/**
- * UserInterface — conteneur des 3 vues utilisateur.
- * La navigation interne ne passe PAS par react-router :
- *  - 'dashboard'  → Dashboard
- *  - 'search'     → SearchAdd (accès via le + du Dashboard)
- *  - 'films'      → Films (accès via "voir ma liste")
- *
- * NavFirst reste visible en permanence via App.jsx (il englobe tout).
- */
-export default function UserInterface() {
+export default function UserInterface({ currentTheme }) {
   const [view, setView] = useState('dashboard');
 
   switch (view) {
-
     case 'search':
       return (
         <SearchAdd
           onBack={() => setView('dashboard')}
           onFilmAdded={() => setView('films')}
+          currentTheme={currentTheme}
         />
       );
 
@@ -30,6 +20,7 @@ export default function UserInterface() {
       return (
         <Films
           onBack={() => setView('dashboard')}
+          currentTheme={currentTheme}
         />
       );
 
@@ -39,6 +30,7 @@ export default function UserInterface() {
         <Dashboard
           onGoToSearch={() => setView('search')}
           onGoToFilms={() => setView('films')}
+          currentTheme={currentTheme}
         />
       );
   }

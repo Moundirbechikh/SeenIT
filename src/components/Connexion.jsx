@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function Connexion({ onSwitch }) {
+export default function Connexion({ onSwitch, onLogin }) {
   const navigate  = useNavigate();
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -12,6 +12,7 @@ export default function Connexion({ onSwitch }) {
     e.preventDefault();
     if (email === 'admin' && password === 'admin') {
       setError('');
+      if (onLogin) onLogin(); // Déclenche le passage au thème Iconic
       navigate('/user');
     } else {
       setError('Identifiants incorrects. Essaie admin / admin.');
