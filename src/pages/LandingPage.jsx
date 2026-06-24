@@ -2,7 +2,22 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clapperboard, Film, Ticket, PlayCircle, Star, Popcorn, Stamp, X } from 'lucide-react';
 
+// --- HELPER : classes texte adaptées au thème ---
+function useThemeStyles() {
+  return {
+    textPrimary:   { color: 'var(--text-primary)' },
+    textSecondary: { color: 'var(--text-secondary)' },
+    textMuted:     { color: 'var(--text-muted)' },
+    textAccent:    { color: 'var(--accent-color)' },
+    bgCard:        { backgroundColor: 'var(--card-color)' },
+    bgMain:        { backgroundColor: 'var(--bg-color)' },
+    borderSubtle:  { borderColor: 'var(--border-subtle)' },
+    borderMedium:  { borderColor: 'var(--border-medium)' },
+  };
+}
+
 const LandingPage = () => {
+  const ts = useThemeStyles();
   const [mounted, setMounted] = useState(false);
   const [featuresVisible, setFeaturesVisible] = useState(false);
 
@@ -51,7 +66,7 @@ const LandingPage = () => {
   const toggleFeature = idx  => setActiveFeature(p => p === idx  ? null : idx);
 
   return (
-    <div className="flex-1 w-full relative">
+    <div className="flex-1 w-full relative transition-colors duration-700" style={ts.bgMain}>
 
       {/* Popcorns déco */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -67,20 +82,21 @@ const LandingPage = () => {
 
           {/* TEXTE HERO */}
           <div className={`flex-1 text-center lg:text-left transform transition-all duration-1000 ease-out ${mounted ? 'translate-x-0 opacity-100' : '-translate-x-32 opacity-0'}`}>
-            <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-white leading-[0.95] mb-8">
+            <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter leading-[0.95] mb-8" style={ts.textPrimary}>
               I've already <br className="hidden lg:block"/>
-              <span className="bg-[var(--accent-color)] text-[var(--bg-color)] py-4 inline-block transition-colors duration-1000 shadow-2xl">
+              <span className="py-4 inline-block transition-colors duration-1000 shadow-2xl px-2" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
                 SeenIt
               </span> before.
             </h1>
 
-            <p className="text-lg lg:text-xl text-slate-300 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium mb-10">
+            <p className="text-lg lg:text-xl max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium mb-10" style={ts.textSecondary}>
               L'espace minimaliste pour archiver les films que tu as vus. Retrouve tes souvenirs, lâche ta critique, et prouve à tes potes que tu avais raison sur la fin de ce thriller.
             </p>
 
             <div className="flex justify-center lg:justify-start">
               <Link to="/auth"
-                className="flex items-center gap-3 bg-[var(--accent-color)] text-[var(--bg-color)] px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-1 shadow-[0_10px_20px_rgba(0,0,0,0.3)]">
+                className="flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-1 shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
+                style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
                 <PlayCircle size={24} />
                 Créer mon espace
               </Link>
@@ -92,32 +108,35 @@ const LandingPage = () => {
             
             {/* 🎟️ TICKET 1 (Gauche) */}
             <div 
-              className="absolute left-4 sm:left-12 w-56 h-80 sm:w-64 sm:h-[400px] bg-[var(--card-color)] border border-white/10 shadow-2xl flex flex-col items-center justify-center p-8 text-center transition-all duration-300 origin-bottom cursor-pointer -rotate-6 z-10 hover:rotate-0 hover:z-30 hover:scale-105"
+              className="absolute left-4 sm:left-12 w-56 h-80 sm:w-64 sm:h-[400px] border shadow-2xl flex flex-col items-center justify-center p-8 text-center transition-all duration-300 origin-bottom cursor-pointer -rotate-6 z-10 hover:rotate-0 hover:z-30 hover:scale-105"
               style={{ 
-                clipPath: 'polygon(0 40px, 4px 34px, 1px 28px, 7px 20px, 3px 12px, 12px 6px, 20px 0, 100% 0, 100% 100%, 0 100%)' 
+                clipPath: 'polygon(0 40px, 4px 34px, 1px 28px, 7px 20px, 3px 12px, 12px 6px, 20px 0, 100% 0, 100% 100%, 0 100%)',
+                backgroundColor: 'var(--card-color)',
+                borderColor: 'var(--border-subtle)'
               }}
             >
-              <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--bg-color)] transition-colors duration-1000"></div>
-              <div className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--bg-color)] transition-colors duration-1000"></div>
-              <div className="absolute left-3 right-3 top-1/2 border-t-2 border-dashed border-white/10"></div>
+              <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-6 rounded-full transition-colors duration-1000" style={ts.bgMain}></div>
+              <div className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full transition-colors duration-1000" style={ts.bgMain}></div>
+              <div className="absolute left-3 right-3 top-1/2 border-t-2 border-dashed" style={ts.borderSubtle}></div>
               
-              <div className="absolute bottom-4 right-4 flex items-center justify-center opacity-40 rotate-[-15deg] text-[var(--accent-color)]">
+              <div className="absolute bottom-4 right-4 flex items-center justify-center opacity-40 rotate-[-15deg]" style={ts.textAccent}>
                 <Stamp size={48} strokeWidth={1.5} />
                 <span className="absolute text-[10px] font-black uppercase tracking-widest mt-1">Admit</span>
               </div>
 
               <div key={textIndex} className="relative z-10 animate-[fadeIn_0.5s_ease-out]">
-                <p className="text-xl sm:text-2xl font-black tracking-tighter text-slate-100 leading-snug bg-[var(--card-color)]/50 backdrop-blur-sm p-2 rounded-lg">
-                  <span className="text-[var(--accent-color)] text-3xl">"</span>
+                <p className="text-xl sm:text-2xl font-black tracking-tighter leading-snug p-2 rounded-lg" style={ts.textPrimary}>
+                  <span className="text-3xl" style={ts.textAccent}>"</span>
                   {funFacts[textIndex]}
-                  <span className="text-[var(--accent-color)] text-3xl">"</span>
+                  <span className="text-3xl" style={ts.textAccent}>"</span>
                 </p>
               </div>
             </div>
 
             {/* 🎟️ TICKET 2 (Droite) */}
             <div 
-              className="absolute right-4 sm:right-12 w-56 h-80 sm:w-64 sm:h-[400px] bg-[var(--bg-color)] shadow-2xl overflow-hidden transition-all duration-300 origin-bottom cursor-pointer rotate-6 z-20 hover:rotate-0 hover:z-30 hover:scale-105 group border-2 border-white/5"
+              className="absolute right-4 sm:right-12 w-56 h-80 sm:w-64 sm:h-[400px] shadow-2xl overflow-hidden transition-all duration-300 origin-bottom cursor-pointer rotate-6 z-20 hover:rotate-0 hover:z-30 hover:scale-105 group border-2"
+              style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-subtle)' }}
             >
               <img 
                 key={classicMovies[movieIndex].img}
@@ -126,15 +145,16 @@ const LandingPage = () => {
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-color)] via-[var(--bg-color)]/80 to-transparent flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                   style={{ background: 'linear-gradient(to top, var(--bg-color) 0%, transparent 100%)' }}>
                 <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                  <div className="flex gap-1 mb-2 text-[var(--accent-color)]">
+                  <div className="flex gap-1 mb-2" style={ts.textAccent}>
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={14} fill={i < classicMovies[movieIndex].stars ? 'currentColor' : 'none'} className={i >= classicMovies[movieIndex].stars ? 'text-white/30' : ''} />
+                      <Star key={i} size={14} fill={i < classicMovies[movieIndex].stars ? 'currentColor' : 'none'} className={i >= classicMovies[movieIndex].stars ? 'opacity-30' : ''} />
                     ))}
                   </div>
-                  <h3 className="font-bold text-white text-xl mb-2">{classicMovies[movieIndex].title}</h3>
-                  <p className="text-sm text-slate-200 italic line-clamp-4 font-medium">
+                  <h3 className="font-bold text-xl mb-2" style={ts.textPrimary}>{classicMovies[movieIndex].title}</h3>
+                  <p className="text-sm italic line-clamp-4 font-medium" style={ts.textSecondary}>
                     "{classicMovies[movieIndex].review}"
                   </p>
                 </div>
@@ -148,35 +168,36 @@ const LandingPage = () => {
             {/* Ticket gauche mobile — Superposé derrière à gauche */}
             <div
               onClick={() => toggleTicket('left')}
-              className="absolute w-60 h-[360px] sm:w-64 sm:h-[400px] bg-[var(--card-color)] border border-white/10 shadow-2xl flex flex-col items-center justify-center p-6 sm:p-8 text-center transition-all duration-300 cursor-pointer select-none origin-bottom"
+              className="absolute w-60 h-[360px] sm:w-64 sm:h-[400px] border shadow-2xl flex flex-col items-center justify-center p-6 sm:p-8 text-center transition-all duration-300 cursor-pointer select-none origin-bottom"
               style={{
                 clipPath: 'polygon(0 40px, 4px 34px, 1px 28px, 7px 20px, 3px 12px, 12px 6px, 20px 0, 100% 0, 100% 100%, 0 100%)',
                 transform: activeTicket === 'left' ? 'rotate(0deg) scale(1.05) translateY(-10px)' : 'rotate(-8deg) translateX(-15px)',
-                borderColor: activeTicket === 'left' ? 'color-mix(in srgb, var(--accent-color) 40%, transparent)' : undefined,
+                backgroundColor: 'var(--card-color)',
+                borderColor: activeTicket === 'left' ? 'color-mix(in srgb, var(--accent-color) 40%, transparent)' : 'var(--border-subtle)',
                 zIndex: activeTicket === 'left' ? 30 : 10
               }}
             >
-              <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--bg-color)] transition-colors duration-1000" />
-              <div className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--bg-color)] transition-colors duration-1000" />
-              <div className="absolute left-3 right-3 top-1/2 border-t-2 border-dashed border-white/10" />
+              <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-6 rounded-full transition-colors duration-1000" style={ts.bgMain} />
+              <div className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full transition-colors duration-1000" style={ts.bgMain} />
+              <div className="absolute left-3 right-3 top-1/2 border-t-2 border-dashed" style={ts.borderSubtle} />
               
-              <div className="absolute bottom-4 right-4 flex items-center justify-center opacity-40 rotate-[-15deg] text-[var(--accent-color)]">
+              <div className="absolute bottom-4 right-4 flex items-center justify-center opacity-40 rotate-[-15deg]" style={ts.textAccent}>
                 <Stamp size={48} strokeWidth={1.5} />
                 <span className="absolute text-[10px] font-black uppercase tracking-widest mt-1">Admit</span>
               </div>
 
               {/* Hint tap quand inactif */}
               {activeTicket !== 'left' && (
-                <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-widest text-white/30 bg-black/40 backdrop-blur-md px-2 py-1 rounded">
+                <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded" style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
                   Appuyer
                 </span>
               )}
 
               <div className="relative z-10 animate-[fadeIn_0.5s_ease-out]">
-                <p className={`text-xl font-black tracking-tighter text-slate-100 leading-snug bg-[var(--card-color)]/50 backdrop-blur-sm p-2 rounded-lg transition-all duration-300 ${activeTicket === 'left' ? 'opacity-100' : 'opacity-60'}`}>
-                  <span className="text-[var(--accent-color)] text-2xl">"</span>
+                <p className={`text-xl font-black tracking-tighter leading-snug p-2 rounded-lg transition-all duration-300 ${activeTicket === 'left' ? 'opacity-100' : 'opacity-60'}`} style={ts.textPrimary}>
+                  <span className="text-2xl" style={ts.textAccent}>"</span>
                   {funFacts[textIndex]}
-                  <span className="text-[var(--accent-color)] text-2xl">"</span>
+                  <span className="text-2xl" style={ts.textAccent}>"</span>
                 </p>
               </div>
             </div>
@@ -184,10 +205,11 @@ const LandingPage = () => {
             {/* Ticket droite mobile — Superposé devant à droite */}
             <div
               onClick={() => toggleTicket('right')}
-              className="absolute w-60 h-[360px] sm:w-64 sm:h-[400px] bg-[var(--bg-color)] shadow-2xl overflow-hidden transition-all duration-300 cursor-pointer select-none border-2 origin-bottom"
+              className="absolute w-60 h-[360px] sm:w-64 sm:h-[400px] shadow-2xl overflow-hidden transition-all duration-300 cursor-pointer select-none border-2 origin-bottom"
               style={{
                 transform: activeTicket === 'right' ? 'rotate(0deg) scale(1.05) translateY(-10px)' : 'rotate(8deg) translateX(15px)',
-                borderColor: activeTicket === 'right' ? 'color-mix(in srgb, var(--accent-color) 50%, transparent)' : 'rgba(255,255,255,0.05)',
+                backgroundColor: 'var(--bg-color)',
+                borderColor: activeTicket === 'right' ? 'color-mix(in srgb, var(--accent-color) 50%, transparent)' : 'var(--border-subtle)',
                 zIndex: activeTicket === 'right' ? 30 : 20
               }}
             >
@@ -199,24 +221,24 @@ const LandingPage = () => {
               <div
                 className="absolute inset-0 flex flex-col justify-end p-6 transition-opacity duration-300"
                 style={{
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)',
+                  background: 'linear-gradient(to top, var(--bg-color) 0%, transparent 100%)',
                   opacity: activeTicket === 'right' ? 1 : 0,
                 }}
               >
-                <div className="flex gap-1 mb-2 text-[var(--accent-color)]">
+                <div className="flex gap-1 mb-2" style={ts.textAccent}>
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} size={14} fill={i < classicMovies[movieIndex].stars ? 'currentColor' : 'none'}
-                      className={i < classicMovies[movieIndex].stars ? '' : 'text-white/30'} />
+                      className={i < classicMovies[movieIndex].stars ? '' : 'opacity-30'} />
                   ))}
                 </div>
-                <h3 className="font-bold text-white text-xl mb-2">{classicMovies[movieIndex].title}</h3>
-                <p className="text-sm text-slate-200 italic line-clamp-4 font-medium">"{classicMovies[movieIndex].review}"</p>
+                <h3 className="font-bold text-xl mb-2" style={ts.textPrimary}>{classicMovies[movieIndex].title}</h3>
+                <p className="text-sm italic line-clamp-4 font-medium" style={ts.textSecondary}>"{classicMovies[movieIndex].review}"</p>
               </div>
 
               {/* Hint tap quand inactif */}
               {activeTicket !== 'right' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/10 backdrop-blur-[1px]">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/50 bg-black/70 px-3 py-1.5 rounded backdrop-blur-md">
+                <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[1px]" style={{ backgroundColor: 'rgba(0,0,0,0.1)' }}>
+                  <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded backdrop-blur-md" style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}>
                     Appuyer
                   </span>
                 </div>
@@ -229,15 +251,16 @@ const LandingPage = () => {
       {/* ══════════════ SECTION 2 : FONCTIONNALITÉS ══════════════ */}
       <section
         ref={featuresRef}
-        className="min-h-screen flex items-center py-20 relative bg-[var(--bg-color)] transition-colors duration-1000"
+        className="min-h-screen flex items-center py-20 relative transition-colors duration-1000"
+        style={ts.bgMain}
       >
         <div className="max-w-7xl mx-auto px-6 w-full z-10">
 
           <div className={`text-center mb-16 transform transition-all duration-1000 ${featuresVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-            <h2 className="text-4xl font-black text-white mb-4 tracking-tight">
-              Pensé comme un <span className="text-[var(--accent-color)] transition-colors duration-1000">Réalisateur</span>.
+            <h2 className="text-4xl font-black mb-4 tracking-tight" style={ts.textPrimary}>
+              Pensé comme un <span className="transition-colors duration-1000" style={ts.textAccent}>Réalisateur</span>.
             </h2>
-            <p className="text-slate-400 text-lg font-medium">Pas d'algorithmes. Pas de pubs. Juste le cinéma tel que tu l'as vécu.</p>
+            <p className="text-lg font-medium" style={ts.textSecondary}>Pas d'algorithmes. Pas de pubs. Juste le cinéma tel que tu l'as vécu.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-10">
@@ -245,96 +268,106 @@ const LandingPage = () => {
             {/* ── CARTE 1 : Le Clap ── */}
             <div
               onClick={() => toggleFeature(0)}
-              className={`relative bg-[var(--card-color)] rounded-xl overflow-hidden shadow-2xl border border-white/5
+              className={`relative rounded-xl overflow-hidden shadow-2xl border
                 transform transition-all duration-500 cursor-pointer
-                md:hover:-translate-y-3 md:hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] group
+                md:hover:-translate-y-3 md:hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] group
                 ${featuresVisible ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0'}
-                ${activeFeature === 0 ? '-translate-y-3 shadow-[0_20px_40px_rgba(0,0,0,0.5)] border-[var(--accent-color)]/30' : ''}
               `}
-              style={{ transitionDelay: '100ms' }}
+              style={{ 
+                transitionDelay: '100ms',
+                backgroundColor: 'var(--card-color)',
+                borderColor: activeFeature === 0 ? 'color-mix(in srgb, var(--accent-color) 40%, transparent)' : 'var(--border-subtle)'
+              }}
             >
               <div
-                className="h-8 w-full bg-[#0a0a0a] flex relative transition-transform duration-300"
+                className="h-8 w-full flex relative transition-transform duration-300"
                 style={{
-                  backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.8) 10px, rgba(255,255,255,0.8) 20px)',
+                  backgroundColor: 'var(--border-subtle)',
+                  backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px)',
                   transform: activeFeature === 0 ? 'rotate(-6deg)' : 'rotate(0deg)',
                   transformOrigin: 'bottom left',
                 }}
               >
-                <div className="absolute -left-1 -top-1 w-3 h-3 rounded-full bg-white shadow-sm" />
+                <div className="absolute -left-1 -top-1 w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: 'var(--text-primary)' }} />
               </div>
               <div className="p-8">
                 <Clapperboard
-                  className="text-[var(--accent-color)] mb-6 transition-transform duration-300"
-                  style={{ transform: activeFeature === 0 ? 'scale(1.1)' : 'scale(1)' }}
+                  className="mb-6 transition-transform duration-300"
+                  style={{ color: 'var(--accent-color)', transform: activeFeature === 0 ? 'scale(1.1)' : 'scale(1)' }}
                   size={32}
                 />
-                <h3 className="text-2xl font-bold text-white mb-3 uppercase tracking-wider">Action Immédiate</h3>
-                <p className="text-slate-400 font-medium">Recherche TMDB ultra-optimisée. Trouve l'affiche et la date avant même d'avoir fini de taper le titre.</p>
+                <h3 className="text-2xl font-bold mb-3 uppercase tracking-wider" style={ts.textPrimary}>Action Immédiate</h3>
+                <p className="font-medium" style={ts.textSecondary}>Recherche TMDB ultra-optimisée. Trouve l'affiche et la date avant même d'avoir fini de taper le titre.</p>
               </div>
             </div>
 
             {/* ── CARTE 2 : Le Ticket ── */}
             <div
               onClick={() => toggleFeature(1)}
-              className={`relative bg-[var(--accent-color)] text-[var(--bg-color)] rounded-xl shadow-2xl border border-transparent
+              className={`relative rounded-xl shadow-2xl border border-transparent
                 transform transition-all duration-500 cursor-pointer
-                md:hover:-translate-y-3 md:hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] group
+                md:hover:-translate-y-3 md:hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] group
                 ${featuresVisible ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0'}
-                ${activeFeature === 1 ? '-translate-y-3 shadow-[0_20px_40px_rgba(0,0,0,0.5)]' : ''}
               `}
-              style={{ transitionDelay: '300ms' }}
+              style={{ 
+                transitionDelay: '300ms',
+                backgroundColor: 'var(--accent-color)',
+                color: 'var(--text-inverse)'
+              }}
             >
               <div
-                className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--bg-color)] transition-all duration-500"
-                style={{ transform: `translateY(-50%) scale(${activeFeature === 1 ? 1.25 : 1})` }}
+                className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full transition-all duration-500"
+                style={{ backgroundColor: 'var(--bg-color)', transform: `translateY(-50%) scale(${activeFeature === 1 ? 1.25 : 1})` }}
               />
               <div
-                className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--bg-color)] transition-all duration-500"
-                style={{ transform: `translateY(-50%) scale(${activeFeature === 1 ? 1.25 : 1})` }}
+                className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full transition-all duration-500"
+                style={{ backgroundColor: 'var(--bg-color)', transform: `translateY(-50%) scale(${activeFeature === 1 ? 1.25 : 1})` }}
               />
               <div
-                className="absolute left-0 right-0 top-1/2 border-t-2 border-dashed border-[var(--bg-color)] transition-all duration-500"
-                style={{ opacity: activeFeature === 1 ? 0.7 : 0.3 }}
+                className="absolute left-0 right-0 top-1/2 border-t-2 border-dashed transition-all duration-500"
+                style={{ borderColor: 'var(--bg-color)', opacity: activeFeature === 1 ? 0.7 : 0.3 }}
               />
               <div className="p-8 pb-12">
                 <Ticket
-                  className="text-[var(--bg-color)] mb-6 transition-transform duration-500"
-                  style={{ transform: activeFeature === 1 ? 'rotate(12deg) scale(1.1)' : 'rotate(0deg) scale(1)' }}
+                  className="mb-6 transition-transform duration-500"
+                  style={{ color: 'var(--text-inverse)', transform: activeFeature === 1 ? 'rotate(12deg) scale(1.1)' : 'rotate(0deg) scale(1)' }}
                   size={32}
                 />
-                <h3 className="text-2xl font-bold mb-3 uppercase tracking-wider">Ton Siège VIP</h3>
-                <p className="text-[var(--bg-color)] opacity-80 font-bold">Authentification rapide pour créer ta salle privée. Tes critiques n'appartiennent qu'à toi et c'est 100% sécurisé.</p>
+                <h3 className="text-2xl font-bold mb-3 uppercase tracking-wider text-inherit">Ton Siège VIP</h3>
+                <p className="font-bold text-inherit opacity-80">Authentification rapide pour créer ta salle privée. Tes critiques n'appartiennent qu'à toi et c'est 100% sécurisé.</p>
               </div>
             </div>
 
             {/* ── CARTE 3 : La Pellicule ── */}
             <div
               onClick={() => toggleFeature(2)}
-              className={`relative bg-[var(--card-color)] rounded-xl overflow-hidden shadow-2xl border border-white/5
+              className={`relative rounded-xl overflow-hidden shadow-2xl border
                 transform transition-all duration-500 cursor-pointer
-                md:hover:-translate-y-3 md:hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] group
+                md:hover:-translate-y-3 md:hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] group
                 ${featuresVisible ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0'}
-                ${activeFeature === 2 ? '-translate-y-3 shadow-[0_20px_40px_rgba(0,0,0,0.5)] border-[var(--accent-color)]/30' : ''}
               `}
-              style={{ transitionDelay: '500ms' }}
+              style={{ 
+                transitionDelay: '500ms',
+                backgroundColor: 'var(--card-color)',
+                borderColor: activeFeature === 2 ? 'color-mix(in srgb, var(--accent-color) 40%, transparent)' : 'var(--border-subtle)'
+              }}
             >
               <div
-                className="absolute left-2 top-0 bottom-0 w-3 border-y-[600px] border-dashed border-[var(--bg-color)] opacity-40 transition-transform duration-700 ease-out"
-                style={{ transform: activeFeature === 2 ? 'translateY(-8px)' : 'translateY(0)' }}
+                className="absolute left-2 top-0 bottom-0 w-3 border-y-[600px] border-dashed opacity-40 transition-transform duration-700 ease-out"
+                style={{ borderColor: 'var(--bg-color)', transform: activeFeature === 2 ? 'translateY(-8px)' : 'translateY(0)' }}
               />
               <div
-                className="absolute right-2 top-0 bottom-0 w-3 border-y-[600px] border-dashed border-[var(--bg-color)] opacity-40 transition-transform duration-700 ease-out"
-                style={{ transform: activeFeature === 2 ? 'translateY(-8px)' : 'translateY(0)' }}
+                className="absolute right-2 top-0 bottom-0 w-3 border-y-[600px] border-dashed opacity-40 transition-transform duration-700 ease-out"
+                style={{ borderColor: 'var(--bg-color)', transform: activeFeature === 2 ? 'translateY(-8px)' : 'translateY(0)' }}
               />
               <div className="p-8 px-10">
                 <Film
-                  className="text-[var(--accent-color)] mb-6 transition-transform duration-500"
-                  style={{ transform: activeFeature === 2 ? 'rotate(90deg) scale(1.1)' : 'rotate(0deg) scale(1)' }}
+                  className="mb-6 transition-transform duration-500"
+                  style={{ color: 'var(--accent-color)', transform: activeFeature === 2 ? 'rotate(90deg) scale(1.1)' : 'rotate(0deg) scale(1)' }}
                   size={32}
                 />
-                <h3 className="text-2xl font-bold text-white mb-3 uppercase tracking-wider">Archives Légères</h3>
-                <p className="text-slate-400 font-medium">Architecture minimaliste sur MongoDB. On stocke le minimum pour que l'app réponde instantanément.</p>
+                <h3 className="text-2xl font-bold mb-3 uppercase tracking-wider" style={ts.textPrimary}>Archives Légères</h3>
+                <p className="font-medium" style={ts.textSecondary}>Architecture minimaliste sur MongoDB. On stocke le minimum pour que l'app réponde instantanément.</p>
               </div>
             </div>
 

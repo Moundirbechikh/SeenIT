@@ -11,13 +11,17 @@ export default function Auth({ onLogin }) {
     <div className="h-[calc(100vh-96px)] w-full flex items-center justify-center p-4 sm:px-6 relative box-border">
       
       {/* Le cadre principal de ton interface d'authentification */}
-      <main className="w-full max-w-6xl h-full max-h-[650px] bg-[var(--card-color)] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border border-white/5 overflow-hidden flex relative z-10">
+      <main 
+        className="w-full max-w-6xl h-full max-h-[650px] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border overflow-hidden flex relative z-10"
+        style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)' }}
+      >
         
         {/* Panneau de Connexion / Inscription */}
         <div 
-          className={`absolute top-0 left-0 h-full w-full lg:w-1/2 transition-transform duration-700 ease-[cubic-bezier(0.87,0,0.13,1)] z-10 bg-[var(--card-color)] ${
+          className={`absolute top-0 left-0 h-full w-full lg:w-1/2 transition-transform duration-700 ease-[cubic-bezier(0.87,0,0.13,1)] z-10 ${
             isLogin ? 'translate-x-0' : 'lg:translate-x-full'
           }`}
+          style={{ backgroundColor: 'var(--card-color)' }}
         >
           {isLogin ? (
             <Connexion onSwitch={() => setIsLogin(false)} onLogin={onLogin} />
@@ -32,7 +36,8 @@ export default function Auth({ onLogin }) {
             isLogin ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <div className="relative w-full h-full bg-[var(--accent-color)] text-[var(--bg-color)] p-12 flex flex-col justify-center items-center overflow-hidden transition-colors duration-1000 shadow-2xl">
+          <div className="relative w-full h-full p-12 flex flex-col justify-center items-center overflow-hidden transition-colors duration-1000 shadow-2xl"
+               style={{ backgroundColor: 'var(--accent-color)', color: 'var(--bg-color)' }}>
             
             <div className="absolute left-2 top-0 bottom-0 w-4 opacity-30" style={{ backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 15px, var(--bg-color) 15px, var(--bg-color) 30px)' }}></div>
             <div className="absolute right-2 top-0 bottom-0 w-4 opacity-30" style={{ backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 15px, var(--bg-color) 15px, var(--bg-color) 30px)' }}></div>
