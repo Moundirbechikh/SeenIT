@@ -1,6 +1,6 @@
 // Toutes les fonctions d'auth sont ici, une seule source de vérité
 
-const API = 'http://localhost:5000/api/auth';
+const API = 'https://seenit-backend-n8ve.onrender.com/api/auth';
 
 export const saveToken = (token) => localStorage.setItem('seenit_token', token);
 export const getToken  = ()      => localStorage.getItem('seenit_token');
