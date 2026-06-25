@@ -18,20 +18,70 @@ function useThemeStyles() {
 
 export default function Connexion({ onSwitch, onLogin }) {
   const ts = useThemeStyles();
-  const navigate  = useNavigate();
-  const [email,    setEmail]    = useState('');
+  const navigate = useNavigate();
+  
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error,    setError]    = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const handleSubmit = async (e) => {
 
-  const handleSubmit = e => {
     e.preventDefault();
-    if (email === 'admin' && password === 'admin') {
-      setError('');
-      if (onLogin) onLogin(); // Déclenche le passage au thème Iconic
-      navigate('/user');
-    } else {
-      setError('Identifiants incorrects. Essaie admin / admin.');
+
+    setLoading(true);
+
+    setError('');
+
+
+
+    try {
+
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+
+        method: 'POST',
+
+        headers: {
+
+          'Content-Type': 'application/json',
+
+        },
+
+        body: JSON.stringify({ email, password }),
+
+      });
+
+
+
+      const data = await response.json();
+
+
+
+// Dans Connexion.jsx, remplace le bloc if (response.ok) par :
+
+if (response.ok) {
+
+  const { token, user } = data;
+
+  localStorage.setItem('seenit_token', token);
+
+  localStorage.setItem('seenit_user', JSON.stringify(user));
+
+  if (onLogin) onLogin(user); // ← passe l'objet user, pas juste "true"
+
+  navigate('/user');
+
+}
+
+    } catch (err) {
+
+      setError('Impossible de contacter le serveur');
+
+    } finally {
+
+      setLoading(false);
+
     }
+
   };
 
   return (
@@ -100,11 +150,12 @@ export default function Connexion({ onSwitch, onLogin }) {
         {/* Bouton Principal */}
         <button
           type="submit"
+          disabled={loading}
           className="w-full flex items-center justify-center gap-2 px-6 py-3 mt-4 rounded-xl font-bold text-base transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 shadow-[0_8px_16px_rgba(0,0,0,0.3)] group"
           style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}
         >
-          Entrer en salle
-          <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+          {loading ? 'Connexion en cours...' : 'Entrer en salle'}
+          {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
         </button>
       </form>
 

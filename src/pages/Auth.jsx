@@ -24,7 +24,8 @@ export default function Auth({ onLogin }) {
           style={{ backgroundColor: 'var(--card-color)' }}
         >
           {isLogin ? (
-            <Connexion onSwitch={() => setIsLogin(false)} onLogin={onLogin} />
+            // Auth.jsx — inchangé, juste s'assurer que onLogin est transmis à Connexion
+<Connexion onSwitch={() => setIsLogin(false)} onLogin={onLogin} />
           ) : (
             <Inscription onSwitch={() => setIsLogin(true)} />
           )}

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import {
-  Star, Heart, Popcorn, Tag, Landmark, Rocket, Film, Swords
+import { 
+  Swords, Compass, Sparkles, Smile, Siren, Camera, Film, 
+  Users, Wand2, Landmark, Skull, Music, Search, Heart, 
+  Rocket, Tv, Eye, Crosshair, Tent, Tag,Star, Popcorn
 } from 'lucide-react';
 import CardComplet from './Cardcomplet';
 
@@ -12,22 +14,50 @@ const SECTION_CONFIG = {
 };
 
 const CATEGORY_STYLES = {
-  Romance:  { icon: Heart,    style: 'bg-transparent text-pink-300 border-pink-500/40' },
-  Histoire: { icon: Landmark, style: 'bg-transparent text-slate-300 border-slate-500/50' },
-  'Sci-Fi': { icon: Rocket,   style: 'bg-transparent text-emerald-400 border-emerald-500/40' },
-  Drame:    { icon: Film,     style: 'bg-transparent text-slate-300 border-slate-500/50' },
-  Action:   { icon: Swords,   style: 'bg-transparent text-red-400 border-red-500/40' },
-  default:  { icon: Tag,      style: 'bg-transparent text-slate-300 border-white/20' },
+  Action:        { icon: Swords,    style: 'bg-transparent text-red-400 border-red-500/40' },
+  Aventure:      { icon: Compass,   style: 'bg-transparent text-amber-400 border-amber-500/40' },
+  Animation:     { icon: Sparkles,  style: 'bg-transparent text-violet-400 border-violet-500/40' },
+  Comédie:       { icon: Smile,     style: 'bg-transparent text-yellow-400 border-yellow-500/40' },
+  Crime:         { icon: Siren,     style: 'bg-transparent text-rose-400 border-rose-500/40' },
+  Documentaire:  { icon: Camera,    style: 'bg-transparent text-teal-400 border-teal-500/40' },
+  Drame:         { icon: Film,      style: 'bg-transparent text-slate-300 border-slate-500/50' },
+  Familial:      { icon: Users,     style: 'bg-transparent text-sky-400 border-sky-500/40' },
+  Fantastique:   { icon: Wand2,     style: 'bg-transparent text-fuchsia-400 border-fuchsia-500/40' },
+  Histoire:      { icon: Landmark,  style: 'bg-transparent text-orange-300 border-orange-500/40' },
+  Horreur:       { icon: Skull,     style: 'bg-transparent text-zinc-300 border-zinc-500/40' },
+  Musique:       { icon: Music,     style: 'bg-transparent text-pink-400 border-pink-500/40' },
+  Mystère:       { icon: Search,    style: 'bg-transparent text-indigo-400 border-indigo-500/40' },
+  Romance:       { icon: Heart,     style: 'bg-transparent text-pink-300 border-pink-500/40' },
+  'Sci-Fi':      { icon: Rocket,    style: 'bg-transparent text-emerald-400 border-emerald-500/40' },
+  Téléfilm:      { icon: Tv,        style: 'bg-transparent text-blue-400 border-blue-500/40' },
+  Thriller:      { icon: Eye,       style: 'bg-transparent text-red-500 border-red-600/40' },
+  Guerre:        { icon: Crosshair, style: 'bg-transparent text-stone-400 border-stone-500/40' },
+  Western:       { icon: Tent,      style: 'bg-transparent text-orange-400 border-orange-500/40' },
+  default:       { icon: Tag,       style: 'bg-transparent text-slate-300 border-white/20' },
 };
 
 // Surcharges de styles de catégorie pour le thème clair
 const CATEGORY_STYLES_LIGHT = {
-  Romance:  { icon: Heart,    style: 'bg-transparent text-pink-600 border-pink-400/50' },
-  Histoire: { icon: Landmark, style: 'bg-transparent text-stone-600 border-stone-400/50' },
-  'Sci-Fi': { icon: Rocket,   style: 'bg-transparent text-emerald-700 border-emerald-500/40' },
-  Drame:    { icon: Film,     style: 'bg-transparent text-stone-600 border-stone-400/50' },
-  Action:   { icon: Swords,   style: 'bg-transparent text-red-600 border-red-400/40' },
-  default:  { icon: Tag,      style: 'bg-transparent text-stone-500 border-stone-400/30' },
+  Action:        { icon: Swords,    style: 'bg-transparent text-red-600 border-red-400/50' },
+  Aventure:      { icon: Compass,   style: 'bg-transparent text-amber-600 border-amber-400/50' },
+  Animation:     { icon: Sparkles,  style: 'bg-transparent text-violet-600 border-violet-400/50' },
+  Comédie:       { icon: Smile,     style: 'bg-transparent text-yellow-600 border-yellow-400/50' },
+  Crime:         { icon: Siren,     style: 'bg-transparent text-rose-600 border-rose-400/50' },
+  Documentaire:  { icon: Camera,    style: 'bg-transparent text-teal-600 border-teal-400/50' },
+  Drame:         { icon: Film,      style: 'bg-transparent text-stone-600 border-stone-400/50' },
+  Familial:      { icon: Users,     style: 'bg-transparent text-sky-600 border-sky-400/50' },
+  Fantastique:   { icon: Wand2,     style: 'bg-transparent text-fuchsia-600 border-fuchsia-400/50' },
+  Histoire:      { icon: Landmark,  style: 'bg-transparent text-orange-600 border-orange-400/50' },
+  Horreur:       { icon: Skull,     style: 'bg-transparent text-zinc-700 border-zinc-500/50' },
+  Musique:       { icon: Music,     style: 'bg-transparent text-pink-600 border-pink-400/50' },
+  Mystère:       { icon: Search,    style: 'bg-transparent text-indigo-600 border-indigo-400/50' },
+  Romance:       { icon: Heart,     style: 'bg-transparent text-pink-600 border-pink-400/50' },
+  'Sci-Fi':      { icon: Rocket,    style: 'bg-transparent text-emerald-700 border-emerald-500/40' },
+  Téléfilm:      { icon: Tv,        style: 'bg-transparent text-blue-600 border-blue-400/50' },
+  Thriller:      { icon: Eye,       style: 'bg-transparent text-red-700 border-red-500/50' },
+  Guerre:        { icon: Crosshair, style: 'bg-transparent text-stone-700 border-stone-500/50' },
+  Western:       { icon: Tent,      style: 'bg-transparent text-orange-700 border-orange-500/50' },
+  default:       { icon: Tag,       style: 'bg-transparent text-stone-500 border-stone-400/30' },
 };
 
 const Stars = ({ rating, size = 10 }) => (

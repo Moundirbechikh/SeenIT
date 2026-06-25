@@ -1,51 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   Plus, Clapperboard, Film, Popcorn,
-  Star, Heart, Trophy, Mic2, Clock,
-  ArrowRight, Zap, Stamp, Camera, Ticket, Hand, ChevronRight, Crown
+  Star, Heart, Trophy, Mic2,
+  ArrowRight, Stamp, Camera, Hand, ChevronRight, Crown, Loader2
 } from 'lucide-react';
 
-// ─── DONNÉES MOCK ────────────────────────────────────────────────────────────
-const LAST_FILM = {
-  title: 'Interstellar',
-  year: '2014',
-  rating: 5,
-  section: 'elite',
-  posterUrl: 'https://image.tmdb.org/t/p/w500/1pnigkWWy8W032o9TKDneBa3eVK.jpg',
-  watchedAt: 'Hier soir',
-  comment: "Visuellement fou. J'ai rien compris à la 5ème dimension mais la musique de Hans Zimmer sauve tout.",
-};
-
-const COUP_DE_COEUR_FILMS = [
-  {
-    title: 'Interstellar',
-    year: '2014',
-    rating: 5,
-    section: 'elite',
-    posterUrl: 'https://image.tmdb.org/t/p/w500/1pnigkWWy8W032o9TKDneBa3eVK.jpg',
-    watchedAt: 'Hier soir',
-    comment: "Visuellement fou. J'ai rien compris à la 5ème dimension mais la musique de Hans Zimmer sauve tout.",
-  },
-  {
-    title: 'Matrix',
-    year: '1999',
-    rating: 5,
-    section: 'elite',
-    posterUrl: 'https://image.tmdb.org/t/p/w500/pEoqbqtLc4CcwDUDqxmEDSWpWTZ.jpg',
-    watchedAt: 'La semaine passée',
-    comment: "Pilule rouge direct. Ce film a redéfini ma vision de la réalité.",
-  },
-];
-
-const USER_STATS = {
-  name: 'Moundir',
-  totalFilms: 5,
-  favoriteGenre: 'Sci-Fi',
-  favoriteActor: 'M. McConaughey',
-  favoriteActorImg: 'https://image.tmdb.org/t/p/w200/wJiGedOCZhwMx9DezY8uwbNxmAY.jpg',
-  eliteCount: 4,
-  heartCount: 2,
-};
+// ─── CONSTANTES ───────────────────────────────────────────────────────────────
+const TMDB_IMG    = 'https://image.tmdb.org/t/p/w500';
+const TMDB_IMG_SM = 'https://image.tmdb.org/t/p/w200';
 
 const SECTION_COLORS = {
   elite: { label: 'Élite', cls: 'bg-purple-600 text-white border-purple-400/40 shadow-[0_0_12px_rgba(147,51,234,0.5)]' },
@@ -53,9 +15,8 @@ const SECTION_COLORS = {
   navet: { label: 'Navet', cls: 'bg-rose-600 text-white border-rose-400/40' },
 };
 
-// ─── HELPER : classes texte adaptées au thème ─────────────────────────────────
-// Retourne des styles inline basés sur les variables CSS globales
-function useThemeStyles(isLight) {
+// ─── HELPER THÈME ─────────────────────────────────────────────────────────────
+function useThemeStyles() {
   return {
     textPrimary:   { color: 'var(--text-primary)' },
     textSecondary: { color: 'var(--text-secondary)' },
@@ -68,42 +29,108 @@ function useThemeStyles(isLight) {
   };
 }
 
-// ─── COMPOSANT PRINCIPAL ──────────────────────────────────────────────────────
-export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
-  const isLight = currentTheme?.isLight || false;
-  const ts = useThemeStyles(isLight);
+// ─── HELPER : formater la date watchedAt ─────────────────────────────────────
+function formatWatchedAt(dateStr) {
+  if (!dateStr) return 'Récemment';
+  const date = new Date(dateStr);
+  const now   = new Date();
+  const diffMs  = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'Aujourd\'hui';
+  if (diffDays === 1) return 'Hier soir';
+  if (diffDays < 7)  return `Il y a ${diffDays} jours`;
+  if (diffDays < 14) return 'La semaine passée';
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+}
 
+// ─── COMPOSANT PRINCIPAL ──────────────────────────────────────────────────────
+export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, user, stats, films = [], loading }) {
+  const isLight = currentTheme?.isLight || false;
+  const ts = useThemeStyles();
+
+  // ── Données dérivées des props (plus aucun mock) ──────────────────────────
+  const userName     = user?.name || user?.email?.split('@')[0] || 'Cinéphile';
+  const totalFilms   = stats?.total      || 0;
+  const eliteCount   = stats?.eliteCount || 0;
+  const heartCount   = stats?.heartCount || 0;
+  const favoriteGenre = stats?.favoriteGenre || '—';
+
+  // Dernier film depuis les stats
+  const rawLastFilm = stats?.lastFilm || null;
+  const lastFilm = rawLastFilm ? {
+    title:     rawLastFilm.title,
+    year:      rawLastFilm.year,
+    rating:    rawLastFilm.rating || 3,
+    section:   rawLastFilm.section || 'moyen',
+    posterUrl: rawLastFilm.posterPath ? `${TMDB_IMG}${rawLastFilm.posterPath}` : '',
+    watchedAt: formatWatchedAt(rawLastFilm.watchedAt),
+    comment:   rawLastFilm.comment || '',
+  } : null;
+
+  // Films coups de cœur depuis les stats
+  const heartFilmsList = (stats?.heartFilms || []).map(f => ({
+    title:     f.title,
+    year:      f.year,
+    rating:    f.rating || 3,
+    section:   f.section || 'moyen',
+    posterUrl: f.posterPath ? `${TMDB_IMG}${f.posterPath}` : '',
+    watchedAt: 'Coup de cœur',
+    comment:   f.comment || '',
+  }));
+
+  // Acteur favori : acteur le plus fréquent dans tous les films de l'user
+  const actorMap = {};
+  films.filter(Boolean).forEach(film => {
+    (film.actors || []).forEach(actor => {
+      if (!actor.name) return;
+      if (!actorMap[actor.name]) actorMap[actor.name] = { ...actor, count: 0 };
+      actorMap[actor.name].count++;
+    });
+  });
+  const favoriteActorEntry = Object.values(actorMap).sort((a, b) => b.count - a.count)[0] || null;
+  const favoriteActor    = favoriteActorEntry?.name || '—';
+  const favoriteActorImg = favoriteActorEntry?.img
+    ? favoriteActorEntry.img
+    : '';
+
+  // ── États locaux ──────────────────────────────────────────────────────────
   const [mounted,       setMounted]       = useState(false);
   const [activeCard,    setActiveCard]    = useState(null);
   const [heartIndex,    setHeartIndex]    = useState(0);
   const [profileActive, setProfileActive] = useState(null);
   const [clickedBtn,    setClickedBtn]    = useState(null);
 
-  const sec       = SECTION_COLORS[LAST_FILM.section] || SECTION_COLORS.moyen;
-  const heartFilm = COUP_DE_COEUR_FILMS[heartIndex];
-  const heartSec  = SECTION_COLORS[heartFilm.section] || SECTION_COLORS.moyen;
-
   useEffect(() => { setMounted(true); }, []);
+
+  // Rotation automatique des coups de cœur
   useEffect(() => {
+    if (heartFilmsList.length <= 1) return;
     const timer = setInterval(() => {
-      setHeartIndex(p => (p + 1) % COUP_DE_COEUR_FILMS.length);
+      setHeartIndex(p => (p + 1) % heartFilmsList.length);
     }, 10000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heartFilmsList.length]);
 
-  const detailFilm = activeCard === 'last' ? LAST_FILM : activeCard === 'heart' ? heartFilm : null;
-  const contextTitle = activeCard === 'last'
-    ? { label: 'DERNIER FILM', accent: 'VU' }
-    : activeCard === 'heart'
-    ? { label: 'COUP DE', accent: 'CŒUR' }
-    : null;
+  // Reset activeCard si les films changent (ex: après ajout)
+  useEffect(() => { setActiveCard(null); }, [lastFilm?.title]);
+
+  const heartFilm    = heartFilmsList[heartIndex] || null;
+  const sec          = SECTION_COLORS[lastFilm?.section] || SECTION_COLORS.moyen;
+  const heartSec     = SECTION_COLORS[heartFilm?.section] || SECTION_COLORS.moyen;
+
+  const detailFilm   = activeCard === 'last'  ? lastFilm
+                     : activeCard === 'heart' ? heartFilm
+                     : null;
+  const contextTitle = activeCard === 'last'  ? { label: 'DERNIER FILM', accent: 'VU' }
+                     : activeCard === 'heart' ? { label: 'COUP DE',      accent: 'CŒUR' }
+                     : null;
 
   const handleBtnClick = (key, action) => {
     setClickedBtn(key);
     setTimeout(() => { setClickedBtn(null); action(); }, 500);
   };
 
-  // Ornement Iconic : couronne dorée discrète
+  // Ornement Iconic
   const IconicBadge = () => isLight ? (
     <span
       className="inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest rounded border ml-3 align-middle"
@@ -113,12 +140,20 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
     </span>
   ) : null;
 
+  // ── Skeleton loader ───────────────────────────────────────────────────────
+  if (loading) return (
+    <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[60vh]" style={{ backgroundColor: 'var(--bg-color)' }}>
+      <Loader2 size={36} className="animate-spin mb-4" style={{ color: 'var(--accent-color)' }} />
+      <p className="text-[11px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+        Chargement de tes archives…
+      </p>
+    </div>
+  );
+
   return (
-    <div
-      className="flex-1 w-full relative min-h-screen"
-      style={ts.bgMain}
-    >
-      {/* Filigranes */}
+    <div className="flex-1 w-full relative min-h-screen" style={ts.bgMain}>
+
+      {/* Filigranes décoratifs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <Popcorn
           className="absolute top-[8%] right-[3%] rotate-12"
@@ -134,11 +169,11 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8 lg:py-0">
 
-        {/* ====================== HERO DESKTOP ====================== */}
+        {/* ═══════════════════ DESKTOP ═══════════════════ */}
         <section className="hidden lg:flex min-h-[calc(100vh-80px)] flex-col relative z-20">
           <div className="flex-1 flex items-center justify-center gap-16 w-full py-8">
 
-            {/* ── PARTIE GAUCHE ── */}
+            {/* ── GAUCHE : salutation + profil ── */}
             <div className={`flex-1 text-center lg:text-left max-w-xl transform transition-all duration-1000 ease-out ${mounted ? 'translate-x-0 opacity-100' : '-translate-x-12 opacity-0'}`}>
 
               <h1 className="flex flex-wrap items-baseline gap-0 font-black text-5xl xl:text-6xl tracking-tighter mb-3" style={ts.textPrimary}>
@@ -147,7 +182,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
                   className="text-8xl xl:text-9xl inline-block shadow-2xl tracking-tighter py-1"
                   style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}
                 >
-                  {USER_STATS.name}
+                  {userName}
                 </span>
                 <span className="text-8xl xl:text-9xl inline-block shadow-2xl leading-[0.8] tracking-tighter" style={ts.textAccent}>.</span>
                 <IconicBadge />
@@ -156,30 +191,28 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
               <p className="text-lg font-medium leading-relaxed max-w-xl mb-5" style={ts.textSecondary}>
                 Merci d'avoir choisi SeenIt pour archiver ta passion du cinéma.<br />
                 Tu as déjà archivé{' '}
-                <span className="font-bold" style={ts.textPrimary}>{USER_STATS.totalFilms} films</span> dont{' '}
-                <span className="font-bold" style={ts.textAccent}>{USER_STATS.eliteCount} classés Élite</span>.{' '}
+                <span className="font-bold" style={ts.textPrimary}>{totalFilms} film{totalFilms > 1 ? 's' : ''}</span>
+                {eliteCount > 0 && (
+                  <> dont <span className="font-bold" style={ts.textAccent}>{eliteCount} classé{eliteCount > 1 ? 's' : ''} Élite</span></>
+                )}.{' '}
                 Prêt pour la prochaine pépite ?
               </p>
 
+              {/* Profil cinéphile */}
               <div>
                 <h2 className="text-xl font-black tracking-tighter uppercase mb-4 flex items-center gap-3" style={ts.textPrimary}>
                   Ton profil{' '}
-                  <span
-                    className="text-md py-1 px-1"
-                    style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}
-                  >
+                  <span className="text-md py-1 px-1" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
                     cinéphile
                   </span>
                 </h2>
 
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Card Genre */}
+
+                  {/* Card Genre dominant */}
                   <div
                     className={`group relative rounded-2xl border p-6 overflow-hidden cursor-default transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.15)] ${isLight ? 'iconic-card-shimmer' : ''}`}
-                    style={{
-                      backgroundColor: 'var(--card-color)',
-                      borderColor: 'var(--border-subtle)',
-                    }}
+                    style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)' }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--accent-color) 40%, transparent)'}
                     onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
                   >
@@ -192,16 +225,20 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
                         <Trophy size={14} className="transition-transform duration-300 group-hover:scale-110" style={ts.textAccent} />
                         <span className="text-[9px] font-black uppercase tracking-widest" style={ts.textMuted}>Genre dominant</span>
                       </div>
-                      <p className="text-4xl font-black tracking-tighter leading-none mb-1.5 transition-colors duration-300 group-hover:text-[var(--accent-color)]" style={ts.textPrimary}>
-                        {USER_STATS.favoriteGenre}
-                      </p>
+                      {totalFilms === 0 ? (
+                        <p className="text-lg font-black tracking-tight leading-none mb-1.5" style={ts.textMuted}>Pas encore de films</p>
+                      ) : (
+                        <p className="text-4xl font-black tracking-tighter leading-none mb-1.5 transition-colors duration-300 group-hover:text-[var(--accent-color)]" style={ts.textPrimary}>
+                          {favoriteGenre}
+                        </p>
+                      )}
                       <p className="text-[10px] font-bold uppercase tracking-widest" style={ts.textMuted}>
-                        Sur {USER_STATS.totalFilms} films archivés
+                        Sur {totalFilms} film{totalFilms > 1 ? 's' : ''} archivé{totalFilms > 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>
 
-                  {/* Card Acteur */}
+                  {/* Card Acteur récurrent */}
                   <div
                     className={`group relative rounded-2xl border p-5 overflow-hidden cursor-default transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.15)] ${isLight ? 'iconic-card-shimmer' : ''}`}
                     style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)' }}
@@ -211,95 +248,150 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                       style={{ background: 'radial-gradient(ellipse at 70% 50%, color-mix(in srgb, var(--accent-color) 8%, transparent), transparent 70%)' }} />
                     <div className="relative z-10 flex items-center gap-4 h-full">
-                      <div className="relative shrink-0">
-                        <div
-                          className="w-14 h-14 rounded-full overflow-hidden border-2 transition-colors duration-300 group-hover:border-[var(--accent-color)]/60"
-                          style={{ borderColor: 'var(--border-medium)' }}
-                        >
-                          <img src={USER_STATS.favoriteActorImg} alt={USER_STATS.favoriteActor} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      {favoriteActorEntry ? (
+                        <>
+                          <div className="relative shrink-0">
+                            <div
+                              className="w-14 h-14 rounded-full overflow-hidden border-2 transition-colors duration-300"
+                              style={{ borderColor: 'var(--border-medium)' }}
+                            >
+                              {favoriteActorImg ? (
+                                <img
+                                  src={favoriteActorImg}
+                                  alt={favoriteActor}
+                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-lg font-black" style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
+                                  {favoriteActor.charAt(0)}
+                                </div>
+                              )}
+                            </div>
+                            <div
+                              className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center border"
+                              style={{ backgroundColor: 'var(--accent-color)', borderColor: 'var(--bg-color)' }}
+                            >
+                              <Mic2 size={8} style={{ color: 'var(--text-inverse)' }} />
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-[9px] font-black uppercase tracking-widest block mb-1" style={ts.textMuted}>Acteur récurrent</span>
+                            <p className="text-xl font-black tracking-tighter leading-none mb-1 transition-colors duration-300 group-hover:text-[var(--accent-color)]" style={ts.textPrimary}>
+                              {favoriteActor}
+                            </p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest" style={ts.textMuted}>
+                              {favoriteActorEntry.count} film{favoriteActorEntry.count > 1 ? 's' : ''} archivé{favoriteActorEntry.count > 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <div>
+                          <span className="text-[9px] font-black uppercase tracking-widest block mb-2" style={ts.textMuted}>Acteur récurrent</span>
+                          <p className="text-lg font-black tracking-tighter" style={ts.textMuted}>
+                            Archive des films pour le découvrir
+                          </p>
                         </div>
-                        <div
-                          className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center border"
-                          style={{ backgroundColor: 'var(--accent-color)', borderColor: 'var(--bg-color)' }}
-                        >
-                          <Mic2 size={8} style={{ color: 'var(--text-inverse)' }} />
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-[9px] font-black uppercase tracking-widest block mb-1" style={ts.textMuted}>Acteur récurrent</span>
-                        <p className="text-xl font-black tracking-tighter leading-none mb-1 transition-colors duration-300 group-hover:text-[var(--accent-color)]" style={ts.textPrimary}>
-                          {USER_STATS.favoriteActor}
-                        </p>
-                        <p className="text-[10px] font-bold uppercase tracking-widest" style={ts.textMuted}>Dans tes archives</p>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* ── PARTIE DROITE : Tickets ── */}
+            {/* ── DROITE : Tickets ── */}
             <div className={`flex-1 relative h-[480px] flex justify-center items-center transform transition-all duration-1000 delay-300 ease-out ${mounted ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'}`}>
 
-              {/* Ticket texte */}
-              <div
-                className={`absolute left-4 xl:left-10 w-60 h-[400px] border shadow-2xl flex flex-col items-center justify-center p-7 text-center -rotate-6 z-10 hover:rotate-0 hover:z-30 hover:scale-105 transition-all duration-300 cursor-pointer ${isLight ? 'iconic-card-shimmer' : ''}`}
-                style={{
-                  backgroundColor: 'var(--card-color)',
-                  borderColor: 'var(--border-subtle)',
-                  clipPath: 'polygon(0 40px, 4px 34px, 1px 28px, 7px 20px, 3px 12px, 12px 6px, 20px 0, 100% 0, 100% 100%, 0 100%)',
-                }}
-                onClick={onGoToFilms}
-              >
-                <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-6 rounded-full" style={ts.bgMain} />
-                <div className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full" style={ts.bgMain} />
-                <div className="absolute left-3 right-3 top-1/2 border-t-2 border-dashed" style={{ borderColor: 'var(--border-subtle)' }} />
-                <div className="absolute bottom-4 right-4 flex items-center justify-center rotate-[-15deg]" style={{ color: 'var(--accent-color)', opacity: 0.3 }}>
-                  <Stamp size={48} strokeWidth={1.5} />
-                  <span className="absolute text-[10px] font-black uppercase tracking-widest mt-1">Admit</span>
-                </div>
-                <div className="relative z-10">
-                  <div className="flex justify-center gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={15} fill={i < LAST_FILM.rating ? 'currentColor' : 'none'}
-                        style={{ color: i < LAST_FILM.rating ? 'var(--accent-color)' : 'var(--border-medium)' }} />
-                    ))}
-                  </div>
-                  <h3 className="text-xl font-black tracking-tighter uppercase mb-1" style={ts.textPrimary}>{LAST_FILM.title}</h3>
-                  <p className="text-[10px] font-bold uppercase tracking-widest mb-5" style={ts.textAccent}>
-                    {LAST_FILM.watchedAt} · {LAST_FILM.year}
-                  </p>
-                  <p className="text-sm font-black tracking-tighter leading-snug p-3 rounded-lg" style={{ ...ts.textPrimary, backgroundColor: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)' }}>
-                    <span style={{ color: 'var(--accent-color)', fontSize: '1.5rem' }}>"</span>
-                    {LAST_FILM.comment}
-                    <span style={{ color: 'var(--accent-color)', fontSize: '1.5rem' }}>"</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Ticket poster */}
-              <div
-                className="absolute right-4 xl:right-10 w-60 h-[400px] shadow-2xl overflow-hidden border rotate-6 z-20 hover:rotate-0 hover:z-30 hover:scale-105 transition-all duration-300 cursor-pointer group"
-                style={{ borderColor: 'var(--border-subtle)' }}
-                onClick={onGoToFilms}
-              >
-                <img src={LAST_FILM.posterUrl} alt={LAST_FILM.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <div className="flex gap-1 mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={13} fill={i < LAST_FILM.rating ? 'currentColor' : 'none'}
-                          style={{ color: i < LAST_FILM.rating ? 'var(--accent-color)' : 'rgba(255,255,255,0.3)' }} />
-                      ))}
+              {lastFilm ? (
+                <>
+                  {/* Ticket critique */}
+                  <div
+                    className={`absolute left-4 xl:left-10 w-60 h-[400px] border shadow-2xl flex flex-col items-center justify-center p-7 text-center -rotate-6 z-10 hover:rotate-0 hover:z-30 hover:scale-105 transition-all duration-300 cursor-pointer ${isLight ? 'iconic-card-shimmer' : ''}`}
+                    style={{
+                      backgroundColor: 'var(--card-color)',
+                      borderColor: 'var(--border-subtle)',
+                      clipPath: 'polygon(0 40px, 4px 34px, 1px 28px, 7px 20px, 3px 12px, 12px 6px, 20px 0, 100% 0, 100% 100%, 0 100%)',
+                    }}
+                    onClick={() => onGoToFilms('tous')}
+                  >
+                    <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-6 rounded-full" style={ts.bgMain} />
+                    <div className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full" style={ts.bgMain} />
+                    <div className="absolute left-3 right-3 top-1/2 border-t-2 border-dashed" style={{ borderColor: 'var(--border-subtle)' }} />
+                    <div className="absolute bottom-4 right-4 flex items-center justify-center rotate-[-15deg]" style={{ color: 'var(--accent-color)', opacity: 0.3 }}>
+                      <Stamp size={48} strokeWidth={1.5} />
+                      <span className="absolute text-[10px] font-black uppercase tracking-widest mt-1">Admit</span>
                     </div>
-                    <h3 className="font-black text-white text-xl uppercase tracking-tight">{LAST_FILM.title}</h3>
-                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--accent-color)' }}>{LAST_FILM.year}</span>
+                    <div className="relative z-10">
+                      <div className="flex justify-center gap-1 mb-4">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={15} fill={i < lastFilm.rating ? 'currentColor' : 'none'}
+                            style={{ color: i < lastFilm.rating ? 'var(--accent-color)' : 'var(--border-medium)' }} />
+                        ))}
+                      </div>
+                      <h3 className="text-xl font-black tracking-tighter uppercase mb-1" style={ts.textPrimary}>{lastFilm.title}</h3>
+                      <p className="text-[10px] font-bold uppercase tracking-widest mb-5" style={ts.textAccent}>
+                        {lastFilm.watchedAt} · {lastFilm.year}
+                      </p>
+                      {lastFilm.comment && (
+                        <p className="text-sm font-black tracking-tighter leading-snug p-3 rounded-lg"
+                          style={{ ...ts.textPrimary, backgroundColor: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)' }}>
+                          <span style={{ color: 'var(--accent-color)', fontSize: '1.5rem' }}>"</span>
+                          {lastFilm.comment.length > 80 ? lastFilm.comment.slice(0, 80) + '…' : lastFilm.comment}
+                          <span style={{ color: 'var(--accent-color)', fontSize: '1.5rem' }}>"</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Ticket poster */}
+                  <div
+                    className="absolute right-4 xl:right-10 w-60 h-[400px] shadow-2xl overflow-hidden border rotate-6 z-20 hover:rotate-0 hover:z-30 hover:scale-105 transition-all duration-300 cursor-pointer group"
+                    style={{ borderColor: 'var(--border-subtle)' }}
+                    onClick={() => onGoToFilms('tous')}
+                  >
+                    {lastFilm.posterUrl ? (
+                      <img
+                        src={lastFilm.posterUrl}
+                        alt={lastFilm.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: 'var(--border-subtle)' }}>
+                        <Film size={60} style={ts.textMuted} strokeWidth={1} />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                        <div className="flex gap-1 mb-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} size={13} fill={i < lastFilm.rating ? 'currentColor' : 'none'}
+                              style={{ color: i < lastFilm.rating ? 'var(--accent-color)' : 'rgba(255,255,255,0.3)' }} />
+                          ))}
+                        </div>
+                        <h3 className="font-black text-white text-xl uppercase tracking-tight">{lastFilm.title}</h3>
+                        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--accent-color)' }}>{lastFilm.year}</span>
+                      </div>
+                    </div>
+                    <div className={`absolute top-4 left-4 px-2.5 py-1 text-[9px] font-black tracking-[0.15em] uppercase rounded border backdrop-blur-md ${sec.cls}`}>
+                      {sec.label}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* État vide — aucun film archivé */
+                <div
+                  className="flex flex-col items-center justify-center w-72 h-[400px] border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 hover:border-[var(--accent-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_4%,transparent)] group"
+                  style={{ borderColor: 'var(--border-medium)' }}
+                  onClick={onGoToSearch}
+                >
+                  <Clapperboard size={48} className="mb-4 transition-transform duration-300 group-hover:scale-110" style={{ color: 'var(--border-medium)' }} strokeWidth={1} />
+                  <p className="text-sm font-black uppercase tracking-wider text-center px-6" style={ts.textMuted}>
+                    Archive ton premier film
+                  </p>
+                  <div className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest" style={ts.textAccent}>
+                    <Plus size={12} strokeWidth={2.5} /> Commencer
                   </div>
                 </div>
-                <div className={`absolute top-4 left-4 px-2.5 py-1 text-[9px] font-black tracking-[0.15em] uppercase rounded border backdrop-blur-md ${sec.cls}`}>
-                  {sec.label}
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -311,7 +403,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
               className={`relative w-72 xl:w-96 rounded-2xl overflow-hidden border cursor-pointer group transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:scale-[0.99] ${isLight ? 'iconic-card-shimmer' : ''}`}
               style={{
                 borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)',
-                background: 'color-mix(in srgb, var(--accent-color) 8%, var(--card-color))',
+                background:  'color-mix(in srgb, var(--accent-color) 8%, var(--card-color))',
               }}
               onClick={onGoToSearch}
             >
@@ -346,7 +438,9 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
                   >
                     <Plus size={22} style={{ color: 'var(--accent-color)' }} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform duration-300" />
                   </div>
-                  <span className="text-xs font-black uppercase tracking-widest transition-colors group-hover:text-[var(--text-primary)]" style={ts.textMuted}>Ajouter un film</span>
+                  <span className="text-xs font-black uppercase tracking-widest transition-colors group-hover:text-[var(--text-primary)]" style={ts.textMuted}>
+                    Ajouter un film
+                  </span>
                 </div>
               </div>
             </div>
@@ -354,9 +448,27 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
             {/* 3 boutons navigation */}
             <div className="flex flex-col gap-3">
               {[
-                { icon: Star,   label: 'Mes Favoris',      sub: `${USER_STATS.eliteCount} films Élite dans tes archives`, tag: 'ÉLITE',  action: onGoToFilms },
-                { icon: Heart,  label: 'Coups de Cœur',    sub: `${USER_STATS.heartCount} films qui t'ont marqué`,        tag: 'FAVS',   action: onGoToFilms },
-                { icon: Camera, label: 'Sélection hebdo',  sub: "Tes stats de la semaine en un coup d'œil",               tag: 'STATS',  action: () => {} },
+                {
+                  icon:   Star,
+                  label:  'Mes Favoris',
+                  sub:    eliteCount > 0 ? `${eliteCount} film${eliteCount > 1 ? 's' : ''} Élite dans tes archives` : 'Archive des films pour voir tes favoris',
+                  tag:    'ÉLITE',
+                  action: () => onGoToFilms('favorite'),
+                },
+                {
+                  icon:   Heart,
+                  label:  'Coups de Cœur',
+                  sub:    heartCount > 0 ? `${heartCount} film${heartCount > 1 ? 's' : ''} qui t'ont marqué` : 'Marque des films en coup de cœur',
+                  tag:    'FAVS',
+                  action: () => onGoToFilms('heart'),
+                },
+                {
+                  icon:   Camera,
+                  label:  'Sélection hebdo',
+                  sub:    "Tes stats de la semaine en un coup d'œil",
+                  tag:    'STATS',
+                  action: () => {},
+                },
               ].map(({ icon: Icon, label, sub, tag, action }) => (
                 <button
                   key={label}
@@ -393,7 +505,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
           </div>
         </section>
 
-        {/* ====================== MOBILE + TABLETTE ====================== */}
+        {/* ═══════════════════ MOBILE + TABLETTE ═══════════════════ */}
         <div className="lg:hidden">
 
           {/* 1. SALUTATION */}
@@ -404,13 +516,15 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
                 className="text-6xl sm:text-7xl inline-block py-2 my-1 shadow-2xl"
                 style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}
               >
-                {USER_STATS.name}
+                {userName}
               </span>
               <span style={ts.textAccent}>.</span>
               {isLight && (
                 <span className="block mt-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border"
-                    style={{ borderColor: 'rgba(201,150,12,0.4)', color: 'var(--accent-color)', backgroundColor: 'rgba(201,150,12,0.07)' }}>
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border"
+                    style={{ borderColor: 'rgba(201,150,12,0.4)', color: 'var(--accent-color)', backgroundColor: 'rgba(201,150,12,0.07)' }}
+                  >
                     <Crown size={8} /> Iconic
                   </span>
                 </span>
@@ -419,8 +533,10 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
             <p className="text-md font-medium mt-4 tracking-wide text-center" style={ts.textSecondary}>
               Merci d'avoir choisi SeenIt pour archiver ta passion du cinéma.<br />
               Tu as déjà archivé{' '}
-              <span className="font-bold" style={ts.textPrimary}>{USER_STATS.totalFilms}</span> films ·{' '}
-              <span className="font-bold" style={ts.textAccent}>{USER_STATS.eliteCount}</span> classés Élite
+              <span className="font-bold" style={ts.textPrimary}>{totalFilms}</span> film{totalFilms > 1 ? 's' : ''}{' '}
+              {eliteCount > 0 && (
+                <>· <span className="font-bold" style={ts.textAccent}>{eliteCount}</span> Élite</>
+              )}
             </p>
           </div>
 
@@ -428,6 +544,8 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
 
           {/* 2. SECTION CARTES FILMS */}
           <div className="mb-10">
+
+            {/* Titre contextuel */}
             <div
               className="overflow-hidden transition-all duration-500 ease-out"
               style={{ maxHeight: contextTitle ? '60px' : '0px', opacity: contextTitle ? 1 : 0, marginBottom: contextTitle ? '16px' : '0px' }}
@@ -442,135 +560,207 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
               )}
             </div>
 
-            {/* Zone des 2 posters */}
-            <div className="relative flex justify-center items-center w-full h-[360px] sm:h-[400px]">
-
-              {/* Card A : Dernier film */}
+            {totalFilms === 0 ? (
+              /* État vide mobile */
               <div
-                onClick={() => setActiveCard(p => p === 'last' ? null : 'last')}
-                className="absolute w-60 h-[340px] sm:w-64 sm:h-[380px] shadow-2xl overflow-hidden cursor-pointer select-none border-2 transition-all duration-400 origin-bottom"
-                style={{
-                  borderColor: activeCard === 'last' ? 'color-mix(in srgb, var(--accent-color) 60%, transparent)' : 'var(--border-subtle)',
-                  transform: activeCard === 'last' ? 'rotate(0deg) scale(1.05) translateY(-10px)' : 'rotate(-6deg) translateX(-20px)',
-                  zIndex: activeCard === 'last' ? 30 : 10,
-                }}
+                className="flex flex-col items-center justify-center h-48 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 active:scale-95"
+                style={{ borderColor: 'var(--border-medium)' }}
+                onClick={onGoToSearch}
               >
-                <img src={LAST_FILM.posterUrl} alt={LAST_FILM.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
-                  style={{ transform: activeCard === 'last' ? 'scale(1.06)' : 'scale(1)' }} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                <div className={`absolute top-3 left-3 px-2 py-0.5 text-[8px] font-black tracking-[0.15em] uppercase rounded border backdrop-blur-md ${sec.cls}`}>
-                  {sec.label}
+                <Clapperboard size={36} className="mb-3" style={{ color: 'var(--border-medium)' }} strokeWidth={1} />
+                <p className="text-xs font-black uppercase tracking-wider text-center px-6 mb-3" style={ts.textMuted}>
+                  Aucun film archivé pour l'instant
+                </p>
+                <div
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest"
+                  style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}
+                >
+                  <Plus size={12} /> Ajouter mon premier film
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-left">
-                  <p className="text-[9px] font-black uppercase tracking-widest mb-0.5 text-white/50">Dernier vu</p>
-                  <p className="text-sm font-black text-white uppercase tracking-tight leading-tight">{LAST_FILM.title}</p>
-                </div>
-                {activeCard === 'last' && (
-                  <div className="absolute inset-0 ring-2 ring-inset pointer-events-none"
-                    style={{ boxShadow: `inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 60%, transparent)` }} />
-                )}
               </div>
+            ) : (
+              <>
+                {/* Zone des 2 posters */}
+                <div className="relative flex justify-center items-center w-full h-[360px] sm:h-[400px]">
 
-              {/* Card B : Coup de cœur */}
-              <div
-                onClick={() => setActiveCard(p => p === 'heart' ? null : 'heart')}
-                className="absolute w-60 h-[340px] sm:w-64 sm:h-[380px] shadow-2xl overflow-hidden cursor-pointer select-none border-2 transition-all duration-400 origin-bottom"
-                style={{
-                  borderColor: activeCard === 'heart' ? 'color-mix(in srgb, var(--accent-color) 60%, transparent)' : 'var(--border-subtle)',
-                  transform: activeCard === 'heart' ? 'rotate(0deg) scale(1.05) translateY(-10px)' : 'rotate(6deg) translateX(20px)',
-                  zIndex: activeCard === 'heart' ? 30 : 20,
-                }}
-              >
-                <img key={heartFilm.posterUrl} src={heartFilm.posterUrl} alt={heartFilm.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
-                  style={{ transform: activeCard === 'heart' ? 'scale(1.06)' : 'scale(1)' }} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                <div className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center backdrop-blur-md"
-                  style={{ backgroundColor: 'color-mix(in srgb, var(--accent-color) 25%, rgba(0,0,0,0.6))' }}>
-                  <Heart size={13} fill="currentColor" style={{ color: 'var(--accent-color)' }} />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-left">
-                  <p className="text-[9px] font-black uppercase tracking-widest mb-0.5 text-white/50">Coup de cœur</p>
-                  <p className="text-sm font-black text-white uppercase tracking-tight leading-tight">{heartFilm.title}</p>
-                </div>
-                <div className="absolute top-3 left-3 flex gap-1">
-                  {COUP_DE_COEUR_FILMS.map((_, i) => (
-                    <div key={i} className="h-1 rounded-full transition-all duration-300"
-                      style={{ width: i === heartIndex ? '16px' : '4px', backgroundColor: i === heartIndex ? 'var(--accent-color)' : 'rgba(255,255,255,0.3)' }} />
-                  ))}
-                </div>
-                {activeCard === 'heart' && (
-                  <div className="absolute inset-0 ring-2 ring-inset pointer-events-none"
-                    style={{ boxShadow: `inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 60%, transparent)` }} />
-                )}
-              </div>
-            </div>
-
-            {/* Ticket détail */}
-            <div
-              className={`relative w-full max-w-md mx-auto h-auto min-h-[320px] border shadow-2xl flex flex-col items-center justify-center p-6 sm:p-8 text-center transition-all duration-500 ease-out mt-0.5 z-10 ${isLight ? 'iconic-card-shimmer' : ''}`}
-              style={{
-                backgroundColor: 'var(--card-color)',
-                clipPath: 'polygon(0 40px, 4px 34px, 1px 28px, 7px 20px, 3px 12px, 12px 6px, 20px 0, 100% 0, 100% 100%, 0 100%)',
-                borderColor: detailFilm ? 'color-mix(in srgb, var(--accent-color) 35%, transparent)' : 'var(--border-subtle)',
-                transform: detailFilm ? 'translateY(0px) scale(1)' : 'translateY(8px) scale(0.98)',
-              }}
-            >
-              <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-6 rounded-full" style={ts.bgMain} />
-              <div className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full" style={ts.bgMain} />
-              <div className="absolute left-3 right-3 top-1/2 border-t-2 border-dashed" style={{ borderColor: 'var(--border-subtle)' }} />
-              <div className="absolute bottom-4 right-4 flex items-center justify-center rotate-[-15deg]" style={{ color: 'var(--accent-color)', opacity: 0.3 }}>
-                <Stamp size={48} strokeWidth={1.5} />
-                <span className="absolute text-[10px] font-black uppercase tracking-widest mt-1">Admit</span>
-              </div>
-
-              <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
-                {detailFilm ? (
-                  <div className="w-full animate-[fadeInUp_0.4s_ease-out]">
-                    <div className="flex justify-center gap-1 mb-4">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={16} fill={i < detailFilm.rating ? 'currentColor' : 'none'}
-                          style={{ color: i < detailFilm.rating ? 'var(--accent-color)' : 'var(--border-medium)' }} />
-                      ))}
+                  {/* Card A : Dernier film */}
+                  {lastFilm && (
+                    <div
+                      onClick={() => setActiveCard(p => p === 'last' ? null : 'last')}
+                      className="absolute w-60 h-[340px] sm:w-64 sm:h-[380px] shadow-2xl overflow-hidden cursor-pointer select-none border-2 transition-all duration-400 origin-bottom"
+                      style={{
+                        borderColor: activeCard === 'last' ? 'color-mix(in srgb, var(--accent-color) 60%, transparent)' : 'var(--border-subtle)',
+                        transform: activeCard === 'last' ? 'rotate(0deg) scale(1.05) translateY(-10px)' : 'rotate(-6deg) translateX(-20px)',
+                        zIndex: activeCard === 'last' ? 30 : 10,
+                      }}
+                    >
+                      {lastFilm.posterUrl ? (
+                        <img
+                          src={lastFilm.posterUrl}
+                          alt={lastFilm.title}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
+                          style={{ transform: activeCard === 'last' ? 'scale(1.06)' : 'scale(1)' }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: 'var(--border-subtle)' }}>
+                          <Film size={50} style={ts.textMuted} strokeWidth={1} />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                      <div className={`absolute top-3 left-3 px-2 py-0.5 text-[8px] font-black tracking-[0.15em] uppercase rounded border backdrop-blur-md ${sec.cls}`}>
+                        {sec.label}
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-4 text-left">
+                        <p className="text-[9px] font-black uppercase tracking-widest mb-0.5 text-white/50">Dernier vu</p>
+                        <p className="text-sm font-black text-white uppercase tracking-tight leading-tight">{lastFilm.title}</p>
+                      </div>
+                      {activeCard === 'last' && (
+                        <div className="absolute inset-0 ring-2 ring-inset pointer-events-none"
+                          style={{ boxShadow: `inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 60%, transparent)` }} />
+                      )}
                     </div>
-                    <h3 className="text-xl font-black tracking-tighter uppercase mb-1" style={ts.textPrimary}>{detailFilm.title}</h3>
-                    <p className="text-[10px] font-bold uppercase tracking-widest mb-5" style={ts.textAccent}>
-                      {detailFilm.watchedAt} · {detailFilm.year}
-                    </p>
-                    <p className="text-sm font-black tracking-tighter leading-snug p-3 rounded-lg" style={{ ...ts.textPrimary, backgroundColor: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)' }}>
-                      <span style={{ color: 'var(--accent-color)', fontSize: '1.5rem' }}>"</span>
-                      {detailFilm.comment}
-                      <span style={{ color: 'var(--accent-color)', fontSize: '1.5rem' }}>"</span>
-                    </p>
-                  </div>
-                ) : (
-                  <div className="text-center px-2">
-                    <div className="w-10 h-10 rounded-full border-2 border-dashed flex items-center justify-center mx-auto mb-3" style={{ borderColor: 'var(--border-medium)' }}>
-                      <Hand size={18} style={ts.textMuted} />
+                  )}
+
+                  {/* Card B : Coup de cœur */}
+                  {heartFilm ? (
+                    <div
+                      onClick={() => setActiveCard(p => p === 'heart' ? null : 'heart')}
+                      className="absolute w-60 h-[340px] sm:w-64 sm:h-[380px] shadow-2xl overflow-hidden cursor-pointer select-none border-2 transition-all duration-400 origin-bottom"
+                      style={{
+                        borderColor: activeCard === 'heart' ? 'color-mix(in srgb, var(--accent-color) 60%, transparent)' : 'var(--border-subtle)',
+                        transform: activeCard === 'heart' ? 'rotate(0deg) scale(1.05) translateY(-10px)' : 'rotate(6deg) translateX(20px)',
+                        zIndex: activeCard === 'heart' ? 30 : 20,
+                      }}
+                    >
+                      {heartFilm.posterUrl ? (
+                        <img
+                          key={heartFilm.posterUrl}
+                          src={heartFilm.posterUrl}
+                          alt={heartFilm.title}
+                          className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
+                          style={{ transform: activeCard === 'heart' ? 'scale(1.06)' : 'scale(1)' }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: 'var(--border-subtle)' }}>
+                          <Film size={50} style={ts.textMuted} strokeWidth={1} />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                      <div className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center backdrop-blur-md"
+                        style={{ backgroundColor: 'color-mix(in srgb, var(--accent-color) 25%, rgba(0,0,0,0.6))' }}>
+                        <Heart size={13} fill="currentColor" style={{ color: 'var(--accent-color)' }} />
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-4 text-left">
+                        <p className="text-[9px] font-black uppercase tracking-widest mb-0.5 text-white/50">Coup de cœur</p>
+                        <p className="text-sm font-black text-white uppercase tracking-tight leading-tight">{heartFilm.title}</p>
+                      </div>
+                      {/* Indicateurs pagination */}
+                      {heartFilmsList.length > 1 && (
+                        <div className="absolute top-3 left-3 flex gap-1">
+                          {heartFilmsList.map((_, i) => (
+                            <div key={i} className="h-1 rounded-full transition-all duration-300"
+                              style={{ width: i === heartIndex ? '16px' : '4px', backgroundColor: i === heartIndex ? 'var(--accent-color)' : 'rgba(255,255,255,0.3)' }} />
+                          ))}
+                        </div>
+                      )}
+                      {activeCard === 'heart' && (
+                        <div className="absolute inset-0 ring-2 ring-inset pointer-events-none"
+                          style={{ boxShadow: `inset 0 0 0 2px color-mix(in srgb, var(--accent-color) 60%, transparent)` }} />
+                      )}
                     </div>
-                    <p className="text-[11px] font-black uppercase tracking-widest leading-relaxed" style={ts.textMuted}>
-                      Appuie sur une<br />carte pour voir<br />les détails
-                    </p>
+                  ) : lastFilm && (
+                    /* Placeholder si aucun coup de cœur */
+                    <div
+                      className="absolute w-60 h-[340px] sm:w-64 sm:h-[380px] border-2 border-dashed rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300"
+                      style={{
+                        borderColor: 'var(--border-medium)',
+                        transform: 'rotate(6deg) translateX(20px)',
+                        zIndex: 20,
+                      }}
+                      onClick={onGoToSearch}
+                    >
+                      <div className="text-center px-4">
+                        <Heart size={32} className="mx-auto mb-2" style={{ color: 'var(--border-medium)' }} strokeWidth={1} />
+                        <p className="text-[9px] font-black uppercase tracking-widest" style={ts.textMuted}>
+                          Marque un film en coup de cœur
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Ticket détail */}
+                <div
+                  className={`relative w-full max-w-md mx-auto h-auto min-h-[260px] border shadow-2xl flex flex-col items-center justify-center p-6 sm:p-8 text-center transition-all duration-500 ease-out mt-0.5 z-10 ${isLight ? 'iconic-card-shimmer' : ''}`}
+                  style={{
+                    backgroundColor: 'var(--card-color)',
+                    clipPath: 'polygon(0 40px, 4px 34px, 1px 28px, 7px 20px, 3px 12px, 12px 6px, 20px 0, 100% 0, 100% 100%, 0 100%)',
+                    borderColor: detailFilm ? 'color-mix(in srgb, var(--accent-color) 35%, transparent)' : 'var(--border-subtle)',
+                    transform: detailFilm ? 'translateY(0px) scale(1)' : 'translateY(8px) scale(0.98)',
+                  }}
+                >
+                  <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-6 rounded-full" style={ts.bgMain} />
+                  <div className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full" style={ts.bgMain} />
+                  <div className="absolute left-3 right-3 top-1/2 border-t-2 border-dashed" style={{ borderColor: 'var(--border-subtle)' }} />
+                  <div className="absolute bottom-4 right-4 flex items-center justify-center rotate-[-15deg]" style={{ color: 'var(--accent-color)', opacity: 0.3 }}>
+                    <Stamp size={48} strokeWidth={1.5} />
+                    <span className="absolute text-[10px] font-black uppercase tracking-widest mt-1">Admit</span>
                   </div>
-                )}
-              </div>
-            </div>
+
+                  <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
+                    {detailFilm ? (
+                      <div className="w-full animate-[fadeInUp_0.4s_ease-out]">
+                        <div className="flex justify-center gap-1 mb-4">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} size={16} fill={i < detailFilm.rating ? 'currentColor' : 'none'}
+                              style={{ color: i < detailFilm.rating ? 'var(--accent-color)' : 'var(--border-medium)' }} />
+                          ))}
+                        </div>
+                        <h3 className="text-xl font-black tracking-tighter uppercase mb-1" style={ts.textPrimary}>{detailFilm.title}</h3>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-4" style={ts.textAccent}>
+                          {detailFilm.watchedAt} · {detailFilm.year}
+                        </p>
+                        {detailFilm.comment && (
+                          <p className="text-sm font-black tracking-tighter leading-snug p-3 rounded-lg"
+                            style={{ ...ts.textPrimary, backgroundColor: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)' }}>
+                            <span style={{ color: 'var(--accent-color)', fontSize: '1.5rem' }}>"</span>
+                            {detailFilm.comment.length > 100 ? detailFilm.comment.slice(0, 100) + '…' : detailFilm.comment}
+                            <span style={{ color: 'var(--accent-color)', fontSize: '1.5rem' }}>"</span>
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center px-2">
+                        <div className="w-10 h-10 rounded-full border-2 border-dashed flex items-center justify-center mx-auto mb-3" style={{ borderColor: 'var(--border-medium)' }}>
+                          <Hand size={18} style={ts.textMuted} />
+                        </div>
+                        <p className="text-[11px] font-black uppercase tracking-widest leading-relaxed" style={ts.textMuted}>
+                          Appuie sur une<br />carte pour voir<br />les détails
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Bouton Voir plus */}
-            <div className="mt-8 flex justify-center">
-              <button
-                onClick={onGoToFilms}
-                className="group flex items-center gap-2 px-6 py-3 rounded-xl border font-black text-xs uppercase tracking-widest transition-all duration-300 active:scale-95"
-                style={{
-                  borderColor: 'color-mix(in srgb, var(--accent-color) 40%, transparent)',
-                  color: 'var(--accent-color)',
-                  backgroundColor: 'color-mix(in srgb, var(--accent-color) 8%, transparent)',
-                }}
-              >
-                Voir plus
-                <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
-              </button>
-            </div>
+            {totalFilms > 0 && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  onClick={() => onGoToFilms('tous')}
+                  className="group flex items-center gap-2 px-6 py-3 rounded-xl border font-black text-xs uppercase tracking-widest transition-all duration-300 active:scale-95"
+                  style={{
+                    borderColor: 'color-mix(in srgb, var(--accent-color) 40%, transparent)',
+                    color: 'var(--accent-color)',
+                    backgroundColor: 'color-mix(in srgb, var(--accent-color) 8%, transparent)',
+                  }}
+                >
+                  Voir tous mes films
+                  <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* 3. PROFIL CINÉPHILE MOBILE */}
@@ -583,6 +773,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
               {/* Card Genre */}
               <div
                 onClick={() => setProfileActive(p => p === 'genre' ? null : 'genre')}
@@ -603,12 +794,14 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
                     <Trophy size={14} style={{ color: 'var(--accent-color)', transform: profileActive === 'genre' ? 'scale(1.15)' : 'scale(1)', transition: 'transform 0.3s' }} />
                     <span className="text-[9px] font-black uppercase tracking-[0.2em]" style={ts.textMuted}>Genre dominant</span>
                   </div>
-                  <p className="text-4xl font-black tracking-tighter leading-none mb-2 transition-colors duration-300"
-                    style={{ color: profileActive === 'genre' ? 'var(--accent-color)' : 'var(--text-primary)' }}>
-                    {USER_STATS.favoriteGenre}
+                  <p
+                    className="text-4xl font-black tracking-tighter leading-none mb-2 transition-colors duration-300"
+                    style={{ color: profileActive === 'genre' ? 'var(--accent-color)' : totalFilms === 0 ? 'var(--text-muted)' : 'var(--text-primary)' }}
+                  >
+                    {totalFilms === 0 ? '—' : favoriteGenre}
                   </p>
                   <p className="text-[10px] font-bold uppercase tracking-widest" style={ts.textMuted}>
-                    Sur {USER_STATS.totalFilms} films archivés
+                    Sur {totalFilms} film{totalFilms > 1 ? 's' : ''} archivé{totalFilms > 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
@@ -631,27 +824,46 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
                     <Mic2 size={14} style={{ color: 'var(--accent-color)', transform: profileActive === 'actor' ? 'scale(1.15)' : 'scale(1)', transition: 'transform 0.3s' }} />
                     <span className="text-[9px] font-black uppercase tracking-[0.2em]" style={ts.textMuted}>Acteur récurrent</span>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="relative shrink-0">
-                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 transition-all duration-500"
-                        style={{ borderColor: profileActive === 'actor' ? 'color-mix(in srgb, var(--accent-color) 60%, transparent)' : 'var(--border-medium)' }}>
-                        <img src={USER_STATS.favoriteActorImg} alt={USER_STATS.favoriteActor}
-                          className="w-full h-full object-cover transition-transform duration-500"
-                          style={{ transform: profileActive === 'actor' ? 'scale(1.1)' : 'scale(1)' }} />
+                  {favoriteActorEntry ? (
+                    <div className="flex items-center gap-4">
+                      <div className="relative shrink-0">
+                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 transition-all duration-500"
+                          style={{ borderColor: profileActive === 'actor' ? 'color-mix(in srgb, var(--accent-color) 60%, transparent)' : 'var(--border-medium)' }}>
+                          {favoriteActorImg ? (
+                            <img
+                              src={favoriteActorImg}
+                              alt={favoriteActor}
+                              className="w-full h-full object-cover transition-transform duration-500"
+                              style={{ transform: profileActive === 'actor' ? 'scale(1.1)' : 'scale(1)' }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xl font-black" style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
+                              {favoriteActor.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
+                          style={{ backgroundColor: 'var(--accent-color)', borderColor: 'var(--bg-color)' }}>
+                          <Mic2 size={9} style={{ color: 'var(--text-inverse)' }} />
+                        </div>
                       </div>
-                      <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
-                        style={{ backgroundColor: 'var(--accent-color)', borderColor: 'var(--bg-color)' }}>
-                        <Mic2 size={9} style={{ color: 'var(--text-inverse)' }} />
+                      <div>
+                        <p
+                          className="text-xl font-black tracking-tighter leading-none mb-1 transition-colors duration-300"
+                          style={{ color: profileActive === 'actor' ? 'var(--accent-color)' : 'var(--text-primary)' }}
+                        >
+                          {favoriteActor}
+                        </p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={ts.textMuted}>
+                          {favoriteActorEntry.count} apparition{favoriteActorEntry.count > 1 ? 's' : ''}
+                        </p>
                       </div>
                     </div>
-                    <div>
-                      <p className="text-xl font-black tracking-tighter leading-none mb-1 transition-colors duration-300"
-                        style={{ color: profileActive === 'actor' ? 'var(--accent-color)' : 'var(--text-primary)' }}>
-                        {USER_STATS.favoriteActor}
-                      </p>
-                      <p className="text-[10px] font-bold uppercase tracking-widest" style={ts.textMuted}>Dans tes archives</p>
-                    </div>
-                  </div>
+                  ) : (
+                    <p className="text-sm font-black tracking-tight" style={ts.textMuted}>
+                      Archive des films pour découvrir ton acteur favori
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -659,12 +871,13 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
 
           {/* 4. AJOUT + 3 BOUTONS MOBILE */}
           <div className="grid grid-cols-1 gap-6 pb-8">
+
             {/* Card "Prouve-le" mobile */}
             <div
               className={`relative rounded-2xl overflow-hidden border cursor-pointer group transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:scale-[0.99] ${isLight ? 'iconic-card-shimmer' : ''}`}
               style={{
                 borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)',
-                background: 'color-mix(in srgb, var(--accent-color) 8%, var(--card-color))',
+                background:  'color-mix(in srgb, var(--accent-color) 8%, var(--card-color))',
               }}
               onClick={onGoToSearch}
             >
@@ -675,8 +888,11 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
               <div className="absolute top-1/2 -left-3 -translate-y-1/2 w-6 h-6 rounded-full" style={ts.bgMain} />
               <div className="absolute top-1/2 -right-3 -translate-y-1/2 w-6 h-6 rounded-full" style={ts.bgMain} />
               <div className="absolute left-4 right-4 top-1/2 border-t border-dashed" style={{ borderColor: 'var(--border-subtle)' }} />
-              <Clapperboard className="absolute right-5 top-1/2 -translate-y-1/2 opacity-[0.06] group-hover:opacity-[0.1] group-hover:rotate-6 transition-all duration-500"
-                style={{ color: 'var(--accent-color)', width: 100, height: 100 }} strokeWidth={1} />
+              <Clapperboard
+                className="absolute right-5 top-1/2 -translate-y-1/2 opacity-[0.06] group-hover:opacity-[0.1] group-hover:rotate-6 transition-all duration-500"
+                style={{ color: 'var(--accent-color)', width: 100, height: 100 }}
+                strokeWidth={1}
+              />
               <div className="absolute bottom-3 right-5 flex items-center justify-center opacity-30 group-hover:opacity-50 rotate-[-12deg] transition-opacity" style={{ color: 'var(--accent-color)' }}>
                 <Stamp size={36} strokeWidth={1.5} />
                 <span className="absolute text-[8px] font-black uppercase tracking-widest mt-0.5">Now</span>
@@ -690,8 +906,10 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
                   Note-le, juge-le, archive-le.<br />Avant que tu l'oublies demain matin.
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all group-hover:scale-105"
-                    style={{ borderColor: 'var(--accent-color)', backgroundColor: 'color-mix(in srgb, var(--accent-color) 15%, transparent)' }}>
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all group-hover:scale-105"
+                    style={{ borderColor: 'var(--accent-color)', backgroundColor: 'color-mix(in srgb, var(--accent-color) 15%, transparent)' }}
+                  >
                     <Plus size={22} style={{ color: 'var(--accent-color)' }} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform duration-300" />
                   </div>
                   <span className="text-xs font-black uppercase tracking-widest transition-colors" style={ts.textMuted}>Ajouter un film</span>
@@ -699,12 +917,33 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
               </div>
             </div>
 
-            {/* 3 boutons mobile */}
+            {/* 3 boutons de navigation mobile */}
             <div className="flex flex-col gap-3">
               {[
-                { icon: Star,   label: 'Mes',       labelAccent: 'Favoris', sub: `${USER_STATS.eliteCount} films Élite`,           key: 'fav',   action: onGoToFilms },
-                { icon: Heart,  label: 'Coups de',  labelAccent: 'Cœur',   sub: `${USER_STATS.heartCount} films qui t'ont marqué`, key: 'heart', action: onGoToFilms },
-                { icon: Camera, label: 'Sélection', labelAccent: 'Hebdo',  sub: "Découvre tes stats",                              key: 'stats', action: () => {} },
+                {
+                  icon:        Star,
+                  label:       'Mes',
+                  labelAccent: 'Favoris',
+                  sub:         eliteCount > 0 ? `${eliteCount} film${eliteCount > 1 ? 's' : ''} Élite` : 'Aucun favori pour l\'instant',
+                  key:         'fav',
+                  action:      () => onGoToFilms('favorite'),
+                },
+                {
+                  icon:        Heart,
+                  label:       'Coups de',
+                  labelAccent: 'Cœur',
+                  sub:         heartCount > 0 ? `${heartCount} film${heartCount > 1 ? 's' : ''} qui t'ont marqué` : 'Aucun coup de cœur pour l\'instant',
+                  key:         'heart',
+                  action:      () => onGoToFilms('heart'),
+                },
+                {
+                  icon:        Camera,
+                  label:       'Sélection',
+                  labelAccent: 'Hebdo',
+                  sub:         'Découvre tes stats',
+                  key:         'stats',
+                  action:      () => {},
+                },
               ].map(({ icon: Icon, label, labelAccent, sub, key, action }) => (
                 <button
                   key={key}
@@ -719,8 +958,10 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
                 >
                   <div className="absolute inset-0 pointer-events-none transition-opacity duration-500"
                     style={{ background: 'linear-gradient(90deg, color-mix(in srgb, var(--accent-color) 8%, transparent) 0%, transparent 60%)', opacity: clickedBtn === key ? 1 : 0 }} />
-                  <div className="relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-500"
-                    style={{ backgroundColor: 'color-mix(in srgb, var(--accent-color) 12%, transparent)', transform: clickedBtn === key ? 'scale(1.1)' : 'scale(1)' }}>
+                  <div
+                    className="relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-500"
+                    style={{ backgroundColor: 'color-mix(in srgb, var(--accent-color) 12%, transparent)', transform: clickedBtn === key ? 'scale(1.1)' : 'scale(1)' }}
+                  >
                     <Icon size={26} style={{ color: 'var(--accent-color)' }} />
                   </div>
                   <div className="relative z-10 flex-1 min-w-0">
@@ -728,13 +969,18 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme }) {
                       <span className="font-black text-xl tracking-tighter uppercase" style={ts.textPrimary}>{label}</span>
                       <span className="font-black text-xl tracking-tighter uppercase" style={ts.textAccent}>{labelAccent}</span>
                     </div>
-                    <div className="text-sm font-medium truncate transition-colors duration-500"
-                      style={{ color: clickedBtn === key ? 'var(--text-secondary)' : 'var(--text-muted)' }}>
+                    <div
+                      className="text-sm font-medium truncate transition-colors duration-500"
+                      style={{ color: clickedBtn === key ? 'var(--text-secondary)' : 'var(--text-muted)' }}
+                    >
                       {sub}
                     </div>
                   </div>
-                  <ArrowRight size={20} className="relative z-10 transition-all duration-500 shrink-0"
-                    style={{ color: clickedBtn === key ? 'var(--accent-color)' : 'var(--text-muted)', transform: clickedBtn === key ? 'translateX(4px)' : 'translateX(0)' }} />
+                  <ArrowRight
+                    size={20}
+                    className="relative z-10 transition-all duration-500 shrink-0"
+                    style={{ color: clickedBtn === key ? 'var(--accent-color)' : 'var(--text-muted)', transform: clickedBtn === key ? 'translateX(4px)' : 'translateX(0)' }}
+                  />
                 </button>
               ))}
             </div>
