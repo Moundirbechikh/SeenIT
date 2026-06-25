@@ -76,7 +76,7 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
         }).then(res => res.json());
 
         // On envoie un "pseudo" token Google à notre backend pour le valider
-        const res = await fetch('http://localhost:5000/api/auth/google', {
+        const res = await fetch('https://seenit-backend-n8ve.onrender.com/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           // Attention: dans un flux de prod parfait, on enverrait l'ID token.
