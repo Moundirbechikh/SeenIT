@@ -213,7 +213,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
 
               <h1 className="flex flex-wrap items-baseline gap-0 font-black text-5xl xl:text-6xl tracking-tighter mb-3" style={ts.textPrimary}>
                 RAVI DE TE REVOIR,
-                <span className="text-8xl xl:text-9xl inline-block shadow-2xl tracking-tighter py-1 px-3 break-all max-w-full"
+                <span className="text-7xl xl:text-8xl inline-block shadow-2xl tracking-tighter py-1 px-3 break-all max-w-full"
                   style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>
                   {userName}
                 </span>
