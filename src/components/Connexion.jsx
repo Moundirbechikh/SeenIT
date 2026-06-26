@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google'; // 👈 Ajout de l'import Google
 
 // --- HELPER : classes texte adaptées au thème ---
 function useThemeStyles() {
@@ -23,16 +24,16 @@ export default function Connexion({ onSwitch, onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState(''); // 👈 État pour le message de bienvenue
+  const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // --- LOGIQUE CONNEXION CLASSIQUE ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccessMsg('');
 
-    // 1. Validation locale : On s'assure que c'est bien un format Gmail
     const emailLower = email.toLowerCase().trim();
     if (!emailLower.endsWith('@gmail.com')) {
       setLoading(false);
@@ -42,38 +43,80 @@ export default function Connexion({ onSwitch, onLogin }) {
     try {
       const response = await fetch('https://seenit-backend-n8ve.onrender.com/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailLower, password }),
       });
 
       const data = await response.json();
 
-      // 2. Si le serveur renvoie une erreur (401, 404, etc.)
       if (!response.ok) {
         throw new Error(data.message || "Identifiants incorrects ou introuvables.");
       }
 
-      // 3. Cas de succès complet
-      const { token, user } = data;
-      localStorage.setItem('seenit_token', token);
-      localStorage.setItem('seenit_user', JSON.stringify(user));
+      localStorage.setItem('seenit_token', data.token);
+      localStorage.setItem('seenit_user', JSON.stringify(data.user));
 
-      setSuccessMsg(`🍿 Bon retour dans la salle, ${user.username} ! Préparation de ton siège...`);
-      setLoading(false);
-
-      // Petit délai de 1.5 seconde pour afficher l'animation de succès avant de sauter sur la page utilisateur
+      setSuccessMsg(`🍿 Bon retour dans la salle, ${data.user.username} ! Préparation de ton siège...`);
+      
       setTimeout(() => {
-        if (onLogin) onLogin(user);
+        if (onLogin) onLogin(data.user);
         navigate('/user');
       }, 1500);
 
     } catch (err) {
       setError(err.message || 'Impossible de contacter le serveur.');
+    } finally {
       setLoading(false);
     }
   };
+
+  // --- LOGIQUE "CONTINUE WITH GOOGLE" (Création & Connexion) 👈 ---
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setError('');
+      setSuccessMsg('');
+      setLoading(true);
+
+      try {
+        // 1. Récupération des données du profil Google
+        const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        }).then(res => res.json());
+
+        // 2. Envoi au backend (qui va soit créer, soit connecter l'utilisateur)
+        const res = await fetch('https://seenit-backend-n8ve.onrender.com/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            credential: tokenResponse.access_token,
+            email: userInfo.email,
+            name: userInfo.name
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Erreur de synchronisation avec le serveur backend");
+
+        // 3. Sauvegarde locale (Mêmes clés que ta connexion classique)
+        localStorage.setItem('seenit_token', data.token);
+        localStorage.setItem('seenit_user', JSON.stringify(data.user));
+        
+        // 4. Succès et redirection
+        setSuccessMsg(`🎬 Accès VIP validé pour ${data.user.username} ! On t'installe...`);
+
+        setTimeout(() => {
+          if (onLogin) onLogin(data.user);
+          navigate('/user'); // Redirection directe vers l'espace utilisateur
+        }, 1500);
+
+      } catch (err) {
+        setError(err.message || "Erreur lors de la connexion avec Google.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => setError('Échec de la connexion Google ou fenêtre fermée'),
+  });
 
   return (
     <div className="w-full h-full flex flex-col justify-center px-8 sm:px-12 py-6 animate-[fadeIn_0.5s_ease-out] font-sans overflow-y-auto lg:overflow-hidden"
@@ -92,7 +135,7 @@ export default function Connexion({ onSwitch, onLogin }) {
         </p>
       </div>
 
-      {/* 🔴 Affichage des erreurs dynamiques */}
+      {/* 🔴 Affichage des erreurs */}
       {error && (
         <div className="p-3 mb-2 text-sm text-red-500 bg-red-100/10 border border-red-500/30 rounded-lg text-center font-semibold animate-[headShake_0.5s_ease-in-out]">
           {error}
@@ -108,7 +151,6 @@ export default function Connexion({ onSwitch, onLogin }) {
       )}
 
       <form className="space-y-3" onSubmit={handleSubmit}>
-
         {/* Champ Email / Identifiant */}
         <div className="space-y-1">
           <label className="text-sm font-bold ml-1" style={ts.textSecondary}>Identifiant (Gmail)</label>
@@ -169,9 +211,10 @@ export default function Connexion({ onSwitch, onLogin }) {
         <div className="flex-grow border-t" style={ts.borderSubtle}></div>
       </div>
 
-      {/* Bouton Google */}
+      {/* Bouton Google 👈 CLIC AJOUTÉ ICI */}
       <button 
         type="button"
+        onClick={() => loginWithGoogle()}
         disabled={loading || !!successMsg}
         className="w-full border font-bold text-sm rounded-xl py-3 transition-all flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
