@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Plus, Clapperboard, Film, Popcorn,
@@ -7,7 +6,7 @@ import {
   Award, ThumbsUp, Meh, ThumbsDown, Zap
 } from 'lucide-react';
 
-// ─── CONSTANTES ───────────────────────────────────────────────────────────────
+// --- CONSTANTES ---------------------------------------------------------------
 const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
 
 // 6 sections complètes avec couleurs
@@ -71,17 +70,35 @@ function formatWatchedAt(dateStr) {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 }
 
-// ─── COMPOSANT PRINCIPAL ──────────────────────────────────────────────────────
+// --- COMPOSANT PRINCIPAL ------------------------------------------------------
 export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, user, stats, films = [], loading }) {
   const isLight = currentTheme?.isLight || false;
   const ts = useThemeStyles();
 
-  // ── username : priorité username > partie email avant @ ───────────────────
-  const userName = user?.username
+  // ── LOGIQUE DE SÉCURISATION ET FORMATAGE DU USERNAME ──────────────────────
+  // 1. Récupération brute du nom
+  const rawUserName = user?.username
     || (user?.email ? user.email.split('@')[0] : null)
     || 'Cinéphile';
 
-  // ── Stats depuis les props ─────────────────────────────────────────────────
+  // 2. Traitement du format (Ex: "bechikh moundir" → "B.Moundir")
+  let userName = rawUserName;
+  const nameParts = rawUserName.trim().split(/\s+/); // Découpe sur les espaces
+
+  if (nameParts.length >= 2) {
+    const firstPart = nameParts[0];
+    const secondPart = nameParts[1];
+    
+    // Vérification des critères : premier mot > 6 lettres ET deuxième mot > 3 lettres
+    if (firstPart.length > 6 && secondPart.length > 3) {
+      const initial = firstPart.charAt(0).toUpperCase();
+      const cleanSecondPart = secondPart.charAt(0).toUpperCase() + secondPart.slice(1);
+      userName = `${initial}.${cleanSecondPart}`;
+    }
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
+  // -- Stats depuis les props -------------------------------------------------
   const totalFilms      = stats?.total           || 0;
   const chefdoeuvreCount = stats?.chefdoeuvreCount || 0;
   const eliteCount      = stats?.eliteCount      || 0;
@@ -90,7 +107,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
   const favCount        = stats?.favCount        || 0;   // isFavorite (étoile jaune)
   const favoriteGenre   = stats?.favoriteGenre   || '—';
 
-  // ── Dernier film vu (watchedAt, pas release date) ─────────────────────────
+  // -- Dernier film vu (watchedAt, pas release date) -------------------------
   const rawLastFilm = stats?.lastFilm || null;
   const lastFilm = rawLastFilm ? {
     title:     rawLastFilm.title,
@@ -98,11 +115,11 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
     rating:    rawLastFilm.rating    || 3,
     section:   rawLastFilm.section   || 'moyen',
     posterUrl: rawLastFilm.posterPath ? `${TMDB_IMG}${rawLastFilm.posterPath}` : '',
-    watchedAt: formatWatchedAt(rawLastFilm.watchedAt), // ← date de VISIONNAGE
+    watchedAt: formatWatchedAt(rawLastFilm.watchedAt), // ? date de VISIONNAGE
     comment:   rawLastFilm.comment   || '',
   } : null;
 
-  // ── Coups de cœur ─────────────────────────────────────────────────────────
+  // -- Coups de cœur ---------------------------------------------------------
   const heartFilmsList = (stats?.heartFilms || []).map(f => ({
     title:     f.title,
     year:      f.year,
@@ -113,7 +130,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
     comment:   f.comment  || '',
   }));
 
-  // ── Acteur le plus fréquent ────────────────────────────────────────────────
+  // -- Acteur le plus fréquent ------------------------------------------------
   const actorMap = {};
   films.filter(Boolean).forEach(film => {
     (film.actors || []).forEach(actor => {
@@ -126,7 +143,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
   const favoriteActor      = favoriteActorEntry?.name || '—';
   const favoriteActorImg   = favoriteActorEntry?.img  || '';
 
-  // ── États locaux ──────────────────────────────────────────────────────────
+  // -- États locaux ----------------------------------------------------------
   const [mounted,       setMounted]       = useState(false);
   const [activeCard,    setActiveCard]    = useState(null);
   const [heartIndex,    setHeartIndex]    = useState(0);
@@ -187,7 +204,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8 lg:py-0">
 
-        {/* ═══════════════ DESKTOP ═══════════════ */}
+        {/* --------------- DESKTOP --------------- */}
         <section className="hidden lg:flex min-h-[calc(100vh-80px)] flex-col relative z-20">
           <div className="flex-1 flex items-center justify-center gap-16 w-full py-8">
 
@@ -195,12 +212,12 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
             <div className={`flex-1 text-center lg:text-left max-w-xl transform transition-all duration-1000 ease-out ${mounted ? 'translate-x-0 opacity-100' : '-translate-x-12 opacity-0'}`}>
 
               <h1 className="flex flex-wrap items-baseline gap-0 font-black text-5xl xl:text-6xl tracking-tighter mb-3" style={ts.textPrimary}>
-                RAVI DE TE REVOIR,
-                <span className="text-8xl xl:text-9xl inline-block shadow-2xl tracking-tighter py-1"
+                RAVI DE TE REVOIR,&nbsp;
+                <span className="text-7xl xl:text-8xl inline-block shadow-2xl tracking-tighter py-1 px-3 break-all max-w-full"
                   style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>
                   {userName}
                 </span>
-                <span className="text-8xl xl:text-9xl inline-block shadow-2xl leading-[0.8] tracking-tighter" style={ts.textAccent}>.</span>
+                <span className="text-7xl xl:text-8xl inline-block shadow-2xl leading-[0.8] tracking-tighter" style={ts.textAccent}>.</span>
                 <IconicBadge />
               </h1>
 
@@ -323,7 +340,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                         ))}
                       </div>
                       <h3 className="text-xl font-black tracking-tighter uppercase mb-1" style={ts.textPrimary}>{lastFilm.title}</h3>
-                      {/* ← watchedAt = date de visionnage, year = année de sortie du film */}
+                      {/* ? watchedAt = date de visionnage, year = année de sortie du film */}
                       <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={ts.textAccent}>
                         Vu {lastFilm.watchedAt}
                       </p>
@@ -428,10 +445,10 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                 {
                   icon:   Star,
                   label:  'Mes Favoris',
-                  // ← favCount = films marqués isFavorite (étoile jaune), PAS les élites
+                  // ? favCount = films marqués isFavorite (étoile jaune), PAS les élites
                   sub:    favCount > 0
                     ? `${favCount} film${favCount > 1 ? 's' : ''} marqué${favCount > 1 ? 's' : ''} en favori`
-                    : 'Marque des films avec ★ pour les retrouver ici',
+                    : 'Marque des films avec ? pour les retrouver ici',
                   tag:    'FAVS',
                   action: () => onGoToFilms('favorite'),
                 },
@@ -441,7 +458,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                   sub:    heartCount > 0
                     ? `${heartCount} film${heartCount > 1 ? 's' : ''} qui t'ont marqué`
                     : 'Marque des films en coup de cœur',
-                  tag:    '❤️',
+                  tag:    '??',
                   action: () => onGoToFilms('heart'),
                 },
                 {
@@ -480,14 +497,14 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
           </div>
         </section>
 
-        {/* ═══════════════ MOBILE + TABLETTE ═══════════════ */}
+        {/* --------------- MOBILE + TABLETTE --------------- */}
         <div className="lg:hidden">
 
           {/* 1. SALUTATION */}
           <div className={`mb-8 pt-4 text-center transform transition-all duration-700 ease-out ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
             <h1 className="text-center font-black tracking-tighter leading-[0.95] text-5xl sm:text-6xl mb-4" style={ts.textPrimary}>
               RAVI DE TE REVOIR,<br />
-              <span className="text-6xl sm:text-7xl inline-block py-2 my-1 shadow-2xl"
+              <span className="text-5xl sm:text-6xl inline-block py-2 my-1 shadow-2xl px-3 break-all max-w-full"
                 style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
                 {userName}
               </span>
@@ -742,7 +759,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm font-black tracking-tight" style={ts.textMuted}>Archive des films pour découvrir ton acteur favori</p>
+                    <p className="text-sm font-black tracking-tight" style={ts.textMuted}>Archive des films pour découvrir ton actor favori</p>
                   )}
                 </div>
               </div>
