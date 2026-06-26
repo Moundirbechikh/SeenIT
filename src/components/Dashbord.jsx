@@ -502,7 +502,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
               )}
             </h1>
             <p className="text-md font-medium mt-4 tracking-wide text-center" style={ts.textSecondary}>
-              Tu as déjà archivé{' '}
+            Merci d'avoir choisi SeenIt pour archiver ta passion du cinéma. Tu as déjà archivé{' '}
               <span className="font-bold" style={ts.textPrimary}>{totalFilms}</span> film{totalFilms > 1 ? 's' : ''}
               {topCount > 0 && (
                 <> · <span className="font-bold" style={ts.textAccent}>{topCount} top</span></>
