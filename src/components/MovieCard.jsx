@@ -7,10 +7,55 @@ import {
 import CardComplet from './Cardcomplet';
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
-const SECTION_CONFIG = {
-  elite: { label: 'Élite', base: 'bg-purple-600 text-white border-purple-400/40' },
-  moyen: { label: 'Moyen', base: 'bg-amber-500 text-slate-950 border-amber-300/40' },
-  navet: { label: 'Navet', base: 'bg-rose-600 text-white border-rose-400/40' },
+export const SECTION_CONFIG = {
+  chefdoeuvre: {
+    label: 'Chef-d\'œuvre',
+    short: 'C.D\'Œ',
+    cls:   'border-yellow-400/70 text-yellow-300 bg-yellow-500/15',
+    icon:  Crown,
+    desc:  'Parfait. À voir absolument.',
+    color: '#EAB308',
+  },
+  elite: {
+    label: 'Élite',
+    short: 'ÉLITE',
+    cls:   'border-purple-500/60 text-purple-300 bg-purple-600/15',
+    icon:  Award,
+    desc:  'Excellent. Marqué à vie.',
+    color: '#A855F7',
+  },
+  bien: {
+    label: 'Bien',
+    short: 'BIEN',
+    cls:   'border-emerald-500/60 text-emerald-300 bg-emerald-600/15',
+    icon:  ThumbsUp,
+    desc:  'Bon film. Content de l\'avoir vu.',
+    color: '#10B981',
+  },
+  moyen: {
+    label: 'Moyen',
+    short: 'MOYEN',
+    cls:   'border-amber-400/60 text-amber-300 bg-amber-500/15',
+    icon:  Meh,
+    desc:  'Correct. Pas de regrets, pas d\'ovation.',
+    color: '#F59E0B',
+  },
+  decu: {
+    label: 'Déçu',
+    short: 'DÉÇU',
+    cls:   'border-orange-500/60 text-orange-300 bg-orange-600/15',
+    icon:  ThumbsDown,
+    desc:  'En dessous des espérances.',
+    color: '#F97316',
+  },
+  navet: {
+    label: 'Navet',
+    short: 'NAVET',
+    cls:   'border-rose-500/60 text-rose-300 bg-rose-600/15',
+    icon:  Zap,
+    desc:  'Tu t\'es sacrifié. Noté pour ne plus recommencer.',
+    color: '#F43F5E',
+  },
 };
 
 const CATEGORY_STYLES = {
