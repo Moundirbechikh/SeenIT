@@ -1,6 +1,6 @@
 import { getToken } from './auth';
 
-const API        = 'http://localhost:5000/api/films';
+const API        = 'https://seenit-backend-n8ve.onrender.com/api/films';
 const TMDB_IMG   = 'https://image.tmdb.org/t/p/w500';
 const TMDB_IMG_SM = 'https://image.tmdb.org/t/p/w200';
 
