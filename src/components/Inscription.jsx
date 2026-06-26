@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { User as UserIcon, Mail, Lock, ArrowRight } from 'lucide-react';
-import { useGoogleLogin } from '@react-oauth/google'; // Import de Google
+import { User as UserIcon, Mail, Lock, ArrowRight, CheckCircle } from 'lucide-react';
+import { useGoogleLogin } from '@react-oauth/google';
 
 // --- HELPER : classes texte adaptées au thème ---
 function useThemeStyles() {
@@ -22,6 +22,7 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
   // --- ÉTATS DU FORMULAIRE ---
   const [formData, setFormData] = useState({ username: '', email: '', password: '', confirm: '' });
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState(''); // 👈 Nouvel état pour le message de bienvenue
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -32,7 +33,15 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    setSuccessMsg('');
 
+    // 1. Validation Stricte de l'adresse Gmail
+    const emailLower = formData.email.toLowerCase().trim();
+    if (!emailLower.endsWith('@gmail.com')) {
+      return setErrorMsg("Désolé, seules les adresses @gmail.com sont autorisées pour ce club !");
+    }
+
+    // 2. Validation de la confirmation du mot de passe
     if (formData.password !== formData.confirm) {
       return setErrorMsg("Les mots de passe ne correspondent pas !");
     }
@@ -50,11 +59,18 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
       });
       
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!res.ok) throw new Error(data.message || "Une erreur est survenue lors de l'inscription");
 
-      // Succès ! On sauvegarde le token et on passe à la suite
+      // Sauvegarde locale du token
       localStorage.setItem('token', data.token);
-      if(onLoginSuccess) onLoginSuccess(data.user);
+      
+      // Affichage du message de bienvenue
+      setSuccessMsg(`🍿 Bienvenue au club, ${data.user.username} ! Ton badge est créé.`);
+
+      // Petit délai de 2 secondes pour laisser le temps de lire le message avant de changer d'écran
+      setTimeout(() => {
+        if(onLoginSuccess) onLoginSuccess(data.user);
+      }, 2000);
       
     } catch (err) {
       setErrorMsg(err.message);
@@ -64,41 +80,42 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
   };
 
   // --- LOGIQUE INSCRIPTION GOOGLE ---
-  // Cette fonction s'exécute si l'utilisateur clique sur ton bouton personnalisé
   const loginWithGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
+      setErrorMsg('');
+      setSuccessMsg('');
       try {
-        // Optionnel : tu peux récupérer les infos de l'utilisateur avec l'access_token ici, 
-        // ou l'envoyer au backend si tu utilises flow="auth-code". 
-        // Pour plus de simplicité avec "implicit grant", on envoie le token direct.
         const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         }).then(res => res.json());
 
-        // On envoie un "pseudo" token Google à notre backend pour le valider
         const res = await fetch('https://seenit-backend-n8ve.onrender.com/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          // Attention: dans un flux de prod parfait, on enverrait l'ID token.
-          // Ici on simule l'envoi des infos vérifiées par Google.
           body: JSON.stringify({ 
-            credential: tokenResponse.access_token, // À ajuster selon le flux choisi
+            credential: tokenResponse.access_token,
             email: userInfo.email,
             name: userInfo.name
           })
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
+        if (!res.ok) throw new Error(data.message || "Erreur de synchronisation avec le serveur backend");
 
         localStorage.setItem('token', data.token);
-        if(onLoginSuccess) onLoginSuccess(data.user);
+        
+        // Message de bienvenue Google
+        setSuccessMsg(`🎬 Heureux de te revoir via Google, ${data.user.username} !`);
+
+        setTimeout(() => {
+          if(onLoginSuccess) onLoginSuccess(data.user);
+        }, 2000);
 
       } catch (err) {
-        setErrorMsg("Erreur lors de la connexion avec Google.");
+        setErrorMsg(err.message || "Erreur lors de la connexion avec Google.");
       }
     },
-    onError: () => setErrorMsg('Échec de la connexion Google'),
+    onError: () => setErrorMsg('Échec de la connexion Google ou fenêtre fermée'),
   });
 
   return (
@@ -117,10 +134,18 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
         </p>
       </div>
 
-      {/* Affichage des erreurs éventuelles */}
+      {/* 🔴 Affichage des erreurs éventuelles */}
       {errorMsg && (
-        <div className="p-2 mb-2 text-sm text-red-500 bg-red-100/10 border border-red-500/50 rounded-lg text-center">
+        <div className="p-3 mb-2 text-sm text-red-500 bg-red-100/10 border border-red-500/30 rounded-lg text-center font-semibold animate-[headShake_0.5s_ease-in-out]">
           {errorMsg}
+        </div>
+      )}
+
+      {/* 🟢 Affichage du message de bienvenue (Succès) */}
+      {successMsg && (
+        <div className="p-3 mb-2 text-sm text-green-500 bg-green-100/10 border border-green-500/30 rounded-lg flex items-center justify-center gap-2 font-bold animate-[bounce_0.5s_ease-in-out]">
+          <CheckCircle size={16} />
+          {successMsg}
         </div>
       )}
 
@@ -130,7 +155,7 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
           <div className="space-y-1">
             <label className="text-sm font-bold ml-1" style={ts.textSecondary}>Nom ou Pseudo</label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0  pl-3.5 flex items-center pointer-events-none">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                 <UserIcon size={16} style={ts.textMuted} />
               </div>
               <input 
@@ -139,15 +164,16 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
                 value={formData.username}
                 onChange={handleChange}
                 required
+                disabled={loading || !!successMsg}
                 placeholder="SpielbergDuDimanche"
-                className="w-full border rounded-xl pl-10 pr-3 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)]"
+                className="w-full border rounded-xl pl-10 pr-3 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)] disabled:opacity-50"
                 style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-bold ml-1" style={ts.textSecondary}>Email</label>
+            <label className="text-sm font-bold ml-1" style={ts.textSecondary}>Email (Gmail uniquement)</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                 <Mail size={16} style={ts.textMuted} />
@@ -158,8 +184,9 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="realisateur@cinema.com"
-                className="w-full border rounded-xl pl-10 pr-3 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)]"
+                disabled={loading || !!successMsg}
+                placeholder="realisateur@gmail.com"
+                className="w-full border rounded-xl pl-10 pr-3 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)] disabled:opacity-50"
                 style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
               />
             </div>
@@ -179,8 +206,9 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
                 value={formData.password}
                 onChange={handleChange}
                 required
+                disabled={loading || !!successMsg}
                 placeholder="••••••••"
-                className="w-full border rounded-xl pl-10 pr-3 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)]"
+                className="w-full border rounded-xl pl-10 pr-3 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)] disabled:opacity-50"
                 style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
               />
             </div>
@@ -198,8 +226,9 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
                 value={formData.confirm}
                 onChange={handleChange}
                 required
+                disabled={loading || !!successMsg}
                 placeholder="••••••••"
-                className="w-full border rounded-xl pl-10 pr-3 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)]"
+                className="w-full border rounded-xl pl-10 pr-3 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)] disabled:opacity-50"
                 style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
               />
             </div>
@@ -208,12 +237,12 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
 
         <button 
           type="submit"
-          disabled={loading}
+          disabled={loading || !!successMsg}
           className="w-full flex items-center justify-center gap-2 px-6 py-2.5 mt-2 rounded-xl font-bold text-base transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 shadow-[0_8px_16px_rgba(0,0,0,0.3)] group disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}
         >
-          {loading ? "Chargement..." : "Prendre un ticket"}
-          {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+          {loading ? "Création du badge..." : successMsg ? "Redirection..." : "Prendre un ticket"}
+          {!loading && !successMsg && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
         </button>
       </form>
 
@@ -226,7 +255,8 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
       <button 
         onClick={() => loginWithGoogle()}
         type="button"
-        className="w-full border font-bold text-sm rounded-xl py-2.5 transition-all flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 hover:opacity-80"
+        disabled={loading || !!successMsg}
+        className="w-full border font-bold text-sm rounded-xl py-2.5 transition-all flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 hover:opacity-80 disabled:opacity-50"
         style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -240,7 +270,7 @@ export default function Inscription({ onSwitch, onLoginSuccess }) {
 
       <p className="text-center mt-4 text-xs sm:text-sm font-medium lg:hidden" style={ts.textSecondary}>
         Déjà membre du club ?{' '}
-        <button onClick={onSwitch} className="font-bold hover:underline" style={ts.textAccent}>
+        <button onClick={onSwitch} disabled={loading || !!successMsg} className="font-bold hover:underline disabled:opacity-50" style={ts.textAccent}>
           Aller à mon siège
         </button>
       </p>

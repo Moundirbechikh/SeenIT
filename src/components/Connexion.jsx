@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // --- HELPER : classes texte adaptées au thème ---
@@ -23,65 +23,56 @@ export default function Connexion({ onSwitch, onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState(''); // 👈 État pour le message de bienvenue
   const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (e) => {
-
     e.preventDefault();
-
     setLoading(true);
-
     setError('');
+    setSuccessMsg('');
 
-
+    // 1. Validation locale : On s'assure que c'est bien un format Gmail
+    const emailLower = email.toLowerCase().trim();
+    if (!emailLower.endsWith('@gmail.com')) {
+      setLoading(false);
+      return setError("Le format de l'identifiant doit être une adresse @gmail.com valide.");
+    }
 
     try {
-
       const response = await fetch('https://seenit-backend-n8ve.onrender.com/api/auth/login', {
-
         method: 'POST',
-
         headers: {
-
           'Content-Type': 'application/json',
-
         },
-
-        body: JSON.stringify({ email, password }),
-
+        body: JSON.stringify({ email: emailLower, password }),
       });
-
-
 
       const data = await response.json();
 
+      // 2. Si le serveur renvoie une erreur (401, 404, etc.)
+      if (!response.ok) {
+        throw new Error(data.message || "Identifiants incorrects ou introuvables.");
+      }
 
+      // 3. Cas de succès complet
+      const { token, user } = data;
+      localStorage.setItem('seenit_token', token);
+      localStorage.setItem('seenit_user', JSON.stringify(user));
 
-// Dans Connexion.jsx, remplace le bloc if (response.ok) par :
-
-if (response.ok) {
-
-  const { token, user } = data;
-
-  localStorage.setItem('seenit_token', token);
-
-  localStorage.setItem('seenit_user', JSON.stringify(user));
-
-  if (onLogin) onLogin(user); // ← passe l'objet user, pas juste "true"
-
-  navigate('/user');
-
-}
-
-    } catch (err) {
-
-      setError('Impossible de contacter le serveur');
-
-    } finally {
-
+      setSuccessMsg(`🍿 Bon retour dans la salle, ${user.username} ! Préparation de ton siège...`);
       setLoading(false);
 
-    }
+      // Petit délai de 1.5 seconde pour afficher l'animation de succès avant de sauter sur la page utilisateur
+      setTimeout(() => {
+        if (onLogin) onLogin(user);
+        navigate('/user');
+      }, 1500);
 
+    } catch (err) {
+      setError(err.message || 'Impossible de contacter le serveur.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,21 +92,37 @@ if (response.ok) {
         </p>
       </div>
 
+      {/* 🔴 Affichage des erreurs dynamiques */}
+      {error && (
+        <div className="p-3 mb-2 text-sm text-red-500 bg-red-100/10 border border-red-500/30 rounded-lg text-center font-semibold animate-[headShake_0.5s_ease-in-out]">
+          {error}
+        </div>
+      )}
+
+      {/* 🟢 Affichage du message de bienvenue */}
+      {successMsg && (
+        <div className="p-3 mb-2 text-sm text-green-500 bg-green-100/10 border border-green-500/30 rounded-lg flex items-center justify-center gap-2 font-bold animate-[bounce_0.5s_ease-in-out]">
+          <CheckCircle size={16} />
+          {successMsg}
+        </div>
+      )}
+
       <form className="space-y-3" onSubmit={handleSubmit}>
 
         {/* Champ Email / Identifiant */}
         <div className="space-y-1">
-          <label className="text-sm font-bold ml-1" style={ts.textSecondary}>Identifiant</label>
+          <label className="text-sm font-bold ml-1" style={ts.textSecondary}>Identifiant (Gmail)</label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Mail size={18} style={ts.textMuted} />
             </div>
             <input
               type="text"
-              placeholder="admin"
+              placeholder="votre.email@gmail.com"
               value={email}
+              disabled={loading || !!successMsg}
               onChange={e => { setEmail(e.target.value); setError(''); }}
-              className="w-full border rounded-xl pl-11 pr-4 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)]"
+              className="w-full border rounded-xl pl-11 pr-4 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)] disabled:opacity-50"
               style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
             />
           </div>
@@ -135,27 +142,23 @@ if (response.ok) {
               type="password"
               placeholder="••••••••"
               value={password}
+              disabled={loading || !!successMsg}
               onChange={e => { setPassword(e.target.value); setError(''); }}
-              className="w-full border rounded-xl pl-11 pr-4 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)]"
+              className="w-full border rounded-xl pl-11 pr-4 py-3 focus:outline-none transition-colors text-sm font-medium placeholder-[color:var(--text-muted)] focus:border-[var(--accent-color)] disabled:opacity-50"
               style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
             />
           </div>
         </div>
 
-        {/* Message d'erreur */}
-        {error && (
-          <p className="text-xs font-bold text-rose-500 ml-1">{error}</p>
-        )}
-
         {/* Bouton Principal */}
         <button
           type="submit"
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3 mt-4 rounded-xl font-bold text-base transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 shadow-[0_8px_16px_rgba(0,0,0,0.3)] group"
+          disabled={loading || !!successMsg}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 mt-4 rounded-xl font-bold text-base transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 shadow-[0_8px_16px_rgba(0,0,0,0.3)] group disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}
         >
-          {loading ? 'Connexion en cours...' : 'Entrer en salle'}
-          {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+          {loading ? 'Connexion en cours...' : successMsg ? 'Accès autorisé...' : 'Entrer en salle'}
+          {!loading && !successMsg && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
         </button>
       </form>
 
@@ -168,7 +171,9 @@ if (response.ok) {
 
       {/* Bouton Google */}
       <button 
-        className="w-full border font-bold text-sm rounded-xl py-3 transition-all flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 hover:opacity-80"
+        type="button"
+        disabled={loading || !!successMsg}
+        className="w-full border font-bold text-sm rounded-xl py-3 transition-all flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -183,7 +188,12 @@ if (response.ok) {
       {/* Switch Mobile */}
       <p className="text-center mt-5 text-sm font-medium lg:hidden" style={ts.textSecondary}>
         Pas encore de compte ?{' '}
-        <button onClick={onSwitch} className="font-bold hover:underline" style={ts.textAccent}>
+        <button 
+          onClick={onSwitch} 
+          disabled={loading || !!successMsg}
+          className="font-bold hover:underline disabled:opacity-50" 
+          style={ts.textAccent}
+        >
           Prendre un ticket
         </button>
       </p>
