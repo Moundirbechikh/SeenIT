@@ -5,7 +5,7 @@ import {
   Pencil, Plus, Tag, Rocket,
    Swords, Compass, Sparkles, Smile, Siren, Camera, Film, 
   Users, Wand2, Landmark, Skull, Music, Search, 
-   Tv, Eye, Crosshair, Tent
+   Tv, Eye, Crosshair, Tent,  Award, ThumbsUp, ThumbsDown, Meh, Zap, Crown
 } from 'lucide-react';
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────

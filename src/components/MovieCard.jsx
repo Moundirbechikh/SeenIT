@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Swords, Compass, Sparkles, Smile, Siren, Camera, Film, 
   Users, Wand2, Landmark, Skull, Music, Search, Heart, 
-  Rocket, Tv, Eye, Crosshair, Tent, Tag,Star, Popcorn
+  Rocket, Tv, Eye, Crosshair, Tent, Tag,Star, Popcorn,Crown, Award, ThumbsUp, Meh, ThumbsDown, Zap
 } from 'lucide-react';
 import CardComplet from './Cardcomplet';
 
