@@ -118,12 +118,15 @@ export default function App() {
   // ── Splash pendant la vérification (évite le flash) ───────────────────────
   if (!authChecked) {
     return (
-      <div style={{
+<div style={{
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backgroundColor: '#09090B', color: '#94A3B8',
+        backgroundColor: 'var(--bg-color)', transition: 'background-color 0.7s'
       }}>
-        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-          SeenIt…
+        <div style={{ fontSize: 13, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+          <span className="transition-colors duration-700 font-black" style={{ color: 'var(--text-primary)' }}>
+            SeenIt
+          </span>
+          <span className="transition-colors duration-700 font-black" style={{ color: 'var(--accent-color)' }}>.</span>
         </div>
       </div>
     );
