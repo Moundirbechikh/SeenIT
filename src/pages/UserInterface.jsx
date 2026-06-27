@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Dashboard  from '../components/Dashbord';
 import SearchAdd  from '../components/Searchadd';
 import Films      from './Films';
-import Suggestion from './Suggestion';   // ← NOUVEAU
+import Suggestion from '../components/Suggestion';   // ← NOUVEAU
 import { fetchMyFilms, fetchStats, toggleFlag } from '../utils/filmsApi';
 
 export default function UserInterface({ currentTheme, user, onLogout, onIconicUnlock }) {
