@@ -13,7 +13,7 @@ import {
   removeFromSuggestion,
 } from '../utils/filmsApi';
 
-// ─── CONFIG SECTIONS ──────────────────────────────────────────────────────────
+// --- CONFIG SECTIONS ----------------------------------------------------------
 const SECTION_CONFIG = {
   chefdoeuvre: { label: "Chef-d'œuvre", cls: 'bg-yellow-500 text-black border-yellow-300/60 shadow-[0_0_12px_rgba(234,179,8,0.4)]', icon: Crown, color: '#EAB308' },
   elite:       { label: 'Élite',        cls: 'bg-purple-600 text-white border-purple-400/40 shadow-[0_0_12px_rgba(147,51,234,0.5)]', icon: Award, color: '#A855F7' },
@@ -38,23 +38,7 @@ function useThemeStyles() {
 
 const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
 
-// ─── HELPER : Prochain mardi/mercredi matin ───────────────────────────────────
-function getNextAddWindow() {
-  const now  = new Date();
-  const day  = now.getDay();
-  const hour = now.getHours();
-  if (day === 2) return null; // C'est mardi
-  if (day === 3 && hour < 12) return null; // C'est mercredi matin
-  const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-  if (day === 3 && hour >= 12) return 'mardi prochain';
-  if (day < 2) {
-    const diff = 2 - day;
-    return diff === 0 ? "aujourd'hui" : diff === 1 ? 'demain (mardi)' : `${days[2]}`;
-  }
-  return 'mardi prochain';
-}
-
-// ─── COMPOSANT : Carte film (dans le fan) ────────────────────────────────────
+// --- COMPOSANT : Carte film (dans le fan) ------------------------------------
 function FilmCard({ film, position, total, isHovered, onHover, onLeave, isLight }) {
   const sec = SECTION_CONFIG[film.section] || SECTION_CONFIG.moyen;
   const SectionIcon = sec.icon;
@@ -101,7 +85,7 @@ function FilmCard({ film, position, total, isHovered, onHover, onLeave, isLight 
     >
       {/* Poster */}
       <div
-        className="w-full h-full relative overflow-hidden border-2 shadow-2xl"
+        className="w-full h-full relative overflow-hidden rounded-md border-2 shadow-2xl"
         style={{
           borderColor: isHovered
             ? sec.color
@@ -126,7 +110,7 @@ function FilmCard({ film, position, total, isHovered, onHover, onLeave, isLight 
         )}
 
         {/* Overlay permanent : badge section */}
-        <div className={`absolute top-3 left-3 px-2 py-0.5 text-[9px] font-black tracking-[0.15em] uppercase border backdrop-blur-md ${sec.cls}`}>
+        <div className={`absolute top-3 left-3 px-2 py-0.5 text-[9px] font-black tracking-[0.15em] rounded-sm uppercase border backdrop-blur-md ${sec.cls}`}>
           {sec.label}
         </div>
 
@@ -153,32 +137,21 @@ function FilmCard({ film, position, total, isHovered, onHover, onLeave, isLight 
           <p className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: sec.color }}>
             {film.year}
           </p>
-          {film.actors?.length > 0 && (
-            <div className="space-y-0.5">
-              {film.actors.slice(0, 2).map((a, i) => (
-                <p key={i} className="text-[8px] text-white/60 font-medium truncate">
-                  {a.name}
-                </p>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
 }
 
-// ─── COMPOSANT : Bloc d'un user avec son fan de films ───────────────────────
+// --- COMPOSANT : Bloc d'un user avec son fan de films -----------------------
 function UserSuggestionBlock({ entry, isOwn, isLight, currentTheme }) {
   const ts = useThemeStyles();
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
   const films    = entry.films || [];
   const username = entry.user?.username || 'Cinéphile';
-  // Initiales
   const initials = username.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
-  // Hauteur du fan : dépend du nombre de films
   const fanHeight = films.length === 0 ? 120 : 290;
 
   return (
@@ -195,16 +168,16 @@ function UserSuggestionBlock({ entry, isOwn, isLight, currentTheme }) {
       {/* Badge "Ma sélection" */}
       {isOwn && (
         <div
-          className="absolute top-0 left-0 right-0 h-0.5"
+          className="absolute top-0 left-0 right-0 h-1"
           style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }}
         />
       )}
 
       {/* Header user */}
-      <div className="flex items-center gap-3 px-5 pt-5 pb-4">
+      <div className="flex items-center gap-4 px-5 pt-6 pb-4">
         {/* Avatar */}
         <div
-          className="w-10 h-10 rounded-full flex items-center justify-center border-2 shrink-0 font-black text-sm"
+          className="w-12 h-12 rounded-full flex items-center justify-center border-2 shrink-0 font-black text-sm shadow-sm"
           style={{
             backgroundColor: isOwn
               ? 'color-mix(in srgb, var(--accent-color) 20%, transparent)'
@@ -217,48 +190,35 @@ function UserSuggestionBlock({ entry, isOwn, isLight, currentTheme }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-black text-sm uppercase tracking-tight" style={ts.textPrimary}>
+            <p className="font-black text-base uppercase tracking-tight" style={ts.textPrimary}>
               {username}
             </p>
             {isOwn && (
               <span
-                className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border"
+                className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border"
                 style={{ color: 'var(--accent-color)', borderColor: 'color-mix(in srgb, var(--accent-color) 40%, transparent)', backgroundColor: 'color-mix(in srgb, var(--accent-color) 8%, transparent)' }}
               >
                 Toi
               </span>
             )}
           </div>
-          <p className="text-[9px] font-bold uppercase tracking-widest mt-0.5" style={ts.textMuted}>
+          <p className="text-[10px] font-bold uppercase tracking-widest mt-1" style={ts.textMuted}>
             {films.length === 0
-              ? 'Aucune sélection cette semaine'
-              : `${films.length} film${films.length > 1 ? 's' : ''} recommandé${films.length > 1 ? 's' : ''}`
+              ? 'Aucune sélection'
+              : `${films.length} film${films.length > 1 ? 's' : ''} partagé${films.length > 1 ? 's' : ''}`
             }
           </p>
         </div>
-        {/* Count badge */}
-        {films.length > 0 && (
-          <div
-            className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm border"
-            style={{
-              backgroundColor: 'color-mix(in srgb, var(--accent-color) 12%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)',
-              color: 'var(--accent-color)',
-            }}
-          >
-            {films.length}
-          </div>
-        )}
       </div>
 
       {/* Fan de films */}
       <div
-        className="relative mx-auto"
+        className="relative mx-auto mt-2"
         style={{ height: fanHeight, width: '100%', maxWidth: 400 }}
       >
         {films.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-2">
-            <Film size={32} style={{ color: 'var(--border-medium)' }} strokeWidth={1} />
+          <div className="flex flex-col items-center justify-center h-full gap-3">
+            <Film size={36} style={{ color: 'var(--border-medium)' }} strokeWidth={1} />
             <p className="text-[10px] font-black uppercase tracking-widest text-center px-4" style={ts.textMuted}>
               Pas encore de suggestion
             </p>
@@ -282,30 +242,30 @@ function UserSuggestionBlock({ entry, isOwn, isLight, currentTheme }) {
       </div>
 
       {/* Ligne de séparation ticket */}
-      <div className="relative mx-5 my-4">
+      <div className="relative mx-5 my-5">
         <div className="absolute -left-8 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full" style={{ backgroundColor: 'var(--bg-color)' }} />
         <div className="absolute -right-8 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full" style={{ backgroundColor: 'var(--bg-color)' }} />
-        <div className="border-t border-dashed" style={{ borderColor: 'var(--border-subtle)' }} />
+        <div className="border-t-2 border-dashed" style={{ borderColor: 'var(--border-subtle)' }} />
       </div>
 
       {/* Liste compacte des films sous le fan */}
       {films.length > 0 && (
-        <div className="px-5 pb-5 space-y-2">
+        <div className="px-5 pb-6 space-y-3">
           {films.map((film, i) => {
             const sec     = SECTION_CONFIG[film.section] || SECTION_CONFIG.moyen;
             const SecIcon = sec.icon;
             return (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-5 h-5 shrink-0 flex items-center justify-center rounded-full"
+                <div className="w-6 h-6 shrink-0 flex items-center justify-center rounded-full"
                   style={{ backgroundColor: `${sec.color}20` }}>
-                  <SecIcon size={10} style={{ color: sec.color }} />
+                  <SecIcon size={12} style={{ color: sec.color }} />
                 </div>
                 <p className="font-black text-xs uppercase tracking-tight truncate flex-1" style={{ color: 'var(--text-primary)' }}>
                   {film.title}
                 </p>
                 <div className="flex gap-0.5 shrink-0">
                   {[...Array(5)].map((_, j) => (
-                    <Star key={j} size={8} fill={j < film.rating ? 'currentColor' : 'none'}
+                    <Star key={j} size={10} fill={j < film.rating ? 'currentColor' : 'none'}
                       style={{ color: j < film.rating ? '#F59E0B' : 'var(--border-medium)' }} />
                   ))}
                 </div>
@@ -318,7 +278,7 @@ function UserSuggestionBlock({ entry, isOwn, isLight, currentTheme }) {
   );
 }
 
-// ─── MODAL : Choisir un film depuis mes archives ──────────────────────────────
+// --- MODAL : Choisir un film depuis mes archives ------------------------------
 function AddFilmModal({ myFilms, alreadyAdded, onAdd, onClose, isLight }) {
   const ts = useThemeStyles();
   const [search, setSearch]   = useState('');
@@ -438,20 +398,20 @@ function AddFilmModal({ myFilms, alreadyAdded, onAdd, onClose, isLight }) {
                       <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--accent-color)' }}>
                         {film.year}
                       </p>
-                      <div className={`inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 text-[8px] font-black tracking-wide border uppercase ${sec.cls}`}>
+                      <div className={`inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 text-[8px] font-black tracking-wide rounded-sm border uppercase ${sec.cls}`}>
                         <SecIcon size={7} /> {sec.label}
                       </div>
                     </div>
                     <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center border transition-all shrink-0"
+                      className="w-8 h-8 rounded-full flex items-center justify-center border transition-all shrink-0"
                       style={{
                         borderColor: isAdding ? 'var(--accent-color)' : 'var(--border-subtle)',
                         backgroundColor: isAdding ? 'color-mix(in srgb, var(--accent-color) 15%, transparent)' : 'transparent',
                       }}
                     >
                       {isAdding
-                        ? <Loader2 size={12} className="animate-spin" style={{ color: 'var(--accent-color)' }} />
-                        : <Plus size={12} style={{ color: 'var(--text-muted)' }} className="group-hover:text-[var(--accent-color)] transition-colors" />
+                        ? <Loader2 size={14} className="animate-spin" style={{ color: 'var(--accent-color)' }} />
+                        : <Plus size={14} style={{ color: 'var(--text-muted)' }} className="group-hover:text-[var(--accent-color)] transition-colors" />
                       }
                     </div>
                   </button>
@@ -465,7 +425,7 @@ function AddFilmModal({ myFilms, alreadyAdded, onAdd, onClose, isLight }) {
   );
 }
 
-// ─── COMPOSANT PRINCIPAL ──────────────────────────────────────────────────────
+// --- COMPOSANT PRINCIPAL ------------------------------------------------------
 export default function Suggestion({ onBack, currentTheme, user }) {
   const isLight = currentTheme?.isLight || false;
   const ts = useThemeStyles();
@@ -483,9 +443,7 @@ export default function Suggestion({ onBack, currentTheme, user }) {
   const [error,           setError]           = useState('');
   const [successMsg,      setSuccessMsg]      = useState('');
 
-  const nextWindow = getNextAddWindow();
-
-  // ── Chargement ────────────────────────────────────────────────────────────
+  // -- Chargement ------------------------------------------------------------
   const loadAll = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -513,7 +471,7 @@ export default function Suggestion({ onBack, currentTheme, user }) {
     loadAll();
   }, [loadAll]);
 
-  // ── Ajouter un film ───────────────────────────────────────────────────────
+  // -- Ajouter un film -------------------------------------------------------
   const handleAdd = async (userFilmId) => {
     setError('');
     try {
@@ -545,7 +503,7 @@ export default function Suggestion({ onBack, currentTheme, user }) {
     }
   };
 
-  // ── Retirer un film ───────────────────────────────────────────────────────
+  // -- Retirer un film -------------------------------------------------------
   const handleRemove = async (tmdbId) => {
     setRemoving(tmdbId);
     setError('');
@@ -574,22 +532,21 @@ export default function Suggestion({ onBack, currentTheme, user }) {
     }
   };
 
-  // ── Films déjà dans ma sélection (pour le modal) ──────────────────────────
+  // -- Films déjà dans ma sélection (pour le modal) --------------------------
   const alreadyAddedTmdbIds = (mySuggestion?.films || []).map(f => f.tmdbId);
 
-  // ── Semaine formatée ──────────────────────────────────────────────────────
+  // -- Semaine formatée ------------------------------------------------------
   const weekDisplay = weekKey
     ? new Date(weekKey).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
     : '';
 
-  // ── Tri : ma sélection en premier ────────────────────────────────────────
+  // -- Tri : ma sélection en premier ----------------------------------------
   const sortedSuggestions = [...suggestions].sort((a, b) => {
     if (a.isOwn) return -1;
     if (b.isOwn) return 1;
     return 0;
   });
 
-  // ── Sépare les autres suggestions de la mienne ───────────────────────────
   const othersOnly = sortedSuggestions.filter(s => !s.isOwn);
 
   return (
@@ -616,39 +573,38 @@ export default function Suggestion({ onBack, currentTheme, user }) {
             onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
           >
-            <ChevronLeft size={14} className="transition-transform duration-200 group-hover:-translate-x-1" />
+            <ChevronLeft size={16} className="transition-transform duration-200 group-hover:-translate-x-1" />
             Retour
           </button>
         )}
 
-        {/* ── En-tête ─────────────────────────────────────────────────────── */}
-        <div className={`mb-8 transform transition-all duration-1000 ease-out ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+        {/* -- En-tête ------------------------------------------------------- */}
+        <div className={`mb-10 transform transition-all duration-1000 ease-out ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-4 h-px" style={{ backgroundColor: 'var(--accent-color)' }} />
-                <span className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: 'var(--accent-color)' }}>
-                  Sélection de la semaine
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-6 h-1 rounded-full" style={{ backgroundColor: 'var(--accent-color)' }} />
+                <span className="text-[10px] font-black uppercase tracking-[0.25em]" style={{ color: 'var(--accent-color)' }}>
+                  Découvertes & Partages
                 </span>
               </div>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter uppercase leading-[0.9] mb-3"
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter uppercase leading-[0.9] mb-4"
                 style={{ color: 'var(--text-primary)' }}>
                 SUGGESTIONS
                 <br />
-                <span className="inline-block py-1 px-2 shadow-2xl mt-1" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
-                  DU MARDI
+                <span className="inline-block py-1 px-3 shadow-2xl mt-1 rounded-sm" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
+                  DE LA SEMAINE
                 </span>
               </h1>
-              <p className="text-sm font-medium max-w-lg" style={{ color: 'var(--text-secondary)' }}>
-                Partage jusqu'à 3 films que tu as vus avec la communauté — chaque semaine, du mardi au mercredi matin.
+              <p className="text-sm font-semibold max-w-lg mt-2" style={{ color: 'var(--text-secondary)' }}>
+                Partage jusqu'à 3 films que tu as vus avec la communauté. Tu peux ajuster ta sélection n'importe quel jour de la semaine !
               </p>
             </div>
 
             {/* Infos semaine + bouton ajouter */}
             <div className="flex flex-col gap-3 shrink-0">
-              {/* Fenêtre d'ajout */}
               <div
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[10px] font-black uppercase tracking-widest ${isLight ? 'iconic-card-shimmer' : ''}`}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-[11px] font-black uppercase tracking-widest ${isLight ? 'iconic-card-shimmer' : ''}`}
                 style={{
                   backgroundColor: canAdd
                     ? 'color-mix(in srgb, var(--accent-color) 10%, transparent)'
@@ -659,79 +615,76 @@ export default function Suggestion({ onBack, currentTheme, user }) {
                   color: canAdd ? 'var(--accent-color)' : 'var(--text-muted)',
                 }}
               >
-                <Clock size={12} />
+                <Clock size={14} />
                 {canAdd
                   ? `${remaining} ajout${remaining > 1 ? 's' : ''} restant${remaining > 1 ? 's' : ''}`
-                  : nextWindow
-                    ? `Prochain ajout : ${nextWindow}`
-                    : 'Cette semaine est terminée'
+                  : 'Quota de la semaine atteint'
                 }
               </div>
 
               {weekDisplay && (
-                <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                  <Calendar size={10} />
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-1" style={{ color: 'var(--text-muted)' }}>
+                  <Calendar size={12} />
                   Semaine du {weekDisplay}
                 </div>
               )}
 
-              {/* Bouton ajouter */}
+              {/* Bouton ajouter principal */}
               {canAdd && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="flex items-center gap-2 px-5 py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl active:scale-95"
+                  className="flex items-center gap-2 px-6 py-3.5 mt-1 rounded-xl font-black text-sm uppercase tracking-widest transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-95"
                   style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}
                 >
-                  <Plus size={16} strokeWidth={2.5} />
+                  <Plus size={18} strokeWidth={2.5} />
                   Ajouter un film
                 </button>
               )}
             </div>
           </div>
 
-          {/* Ligne de séparation */}
-          <div className="mt-6 h-px w-full" style={{ backgroundColor: 'var(--border-subtle)' }} />
+          <div className="mt-8 h-0.5 w-full rounded-full" style={{ backgroundColor: 'var(--border-subtle)' }} />
         </div>
 
         {/* Messages */}
         {successMsg && (
           <div
-            className="flex items-center gap-2 px-4 py-3 rounded-xl mb-6 border text-sm font-bold"
+            className="flex items-center gap-3 px-5 py-4 rounded-xl mb-6 border text-sm font-black uppercase tracking-wide"
             style={{ backgroundColor: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.3)', color: '#10B981' }}
           >
-            <Check size={14} strokeWidth={2.5} /> {successMsg}
+            <Check size={18} strokeWidth={2.5} /> {successMsg}
           </div>
         )}
         {error && (
           <div
-            className="flex items-center gap-2 px-4 py-3 rounded-xl mb-6 border text-sm font-bold"
+            className="flex items-center gap-3 px-5 py-4 rounded-xl mb-6 border text-sm font-black uppercase tracking-wide"
             style={{ backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.3)', color: '#ef4444' }}
           >
-            <AlertCircle size={14} /> {error}
+            <AlertCircle size={18} /> {error}
           </div>
         )}
 
-        {/* ── Loading ──────────────────────────────────────────────────────── */}
+        {/* -- Loading -------------------------------------------------------- */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32">
-            <Loader2 size={36} className="animate-spin mb-4" style={{ color: 'var(--accent-color)' }} />
+            <Loader2 size={40} className="animate-spin mb-4" style={{ color: 'var(--accent-color)' }} />
             <p className="text-[11px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
               Chargement des suggestions…
             </p>
           </div>
         ) : (
           <>
-            {/* ── MA SÉLECTION ──────────────────────────────────────────────── */}
-            <div className={`mb-12 transform transition-all duration-1000 delay-200 ease-out ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-              <div className="flex items-center gap-3 mb-5">
-                <Sparkles size={14} style={{ color: 'var(--accent-color)' }} />
-                <h2 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+            {/* -- MA SÉLECTION ------------------------------------------------ */}
+            <div className={`mb-16 transform transition-all duration-1000 delay-200 ease-out ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              <div className="flex items-center gap-3 mb-6">
+                <Sparkles size={16} style={{ color: 'var(--accent-color)' }} />
+                <h2 className="text-sm font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
                   Ma sélection
                 </h2>
               </div>
 
-              {/* ── Desktop : affichage 2 colonnes (ma selection + contrôle) */}
-              <div className="grid lg:grid-cols-[1fr_320px] gap-6">
+              {/* -- Desktop : affichage 2 colonnes */}
+              <div className="grid lg:grid-cols-[1fr_340px] gap-8">
 
                 {/* Bloc ma sélection */}
                 <UserSuggestionBlock
@@ -750,26 +703,26 @@ export default function Suggestion({ onBack, currentTheme, user }) {
 
                 {/* Panneau gestion ma sélection */}
                 <div
-                  className={`rounded-2xl border p-5 ${isLight ? 'iconic-card-shimmer' : ''}`}
+                  className={`rounded-2xl border p-6 flex flex-col ${isLight ? 'iconic-card-shimmer' : ''}`}
                   style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)' }}
                 >
-                  <div className="flex items-center gap-2 mb-4">
-                    <Clapperboard size={13} style={{ color: 'var(--accent-color)' }} />
-                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'var(--accent-color)' }}>
+                  <div className="flex items-center gap-2 mb-6">
+                    <Clapperboard size={16} style={{ color: 'var(--accent-color)' }} />
+                    <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: 'var(--accent-color)' }}>
                       Gérer ma sélection
                     </span>
                   </div>
 
                   {/* Films déjà ajoutés */}
                   {(mySuggestion?.films || []).length === 0 ? (
-                    <div className="text-center py-8">
-                      <Film size={28} className="mx-auto mb-3" style={{ color: 'var(--border-medium)' }} strokeWidth={1} />
+                    <div className="text-center py-10 flex-1">
+                      <Film size={36} className="mx-auto mb-4" style={{ color: 'var(--border-medium)' }} strokeWidth={1} />
                       <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                        {canAdd ? "Ajoute jusqu'à 3 films" : 'Aucune sélection cette semaine'}
+                        Ajoute jusqu'à 3 films
                       </p>
                     </div>
                   ) : (
-                    <div className="space-y-2 mb-4">
+                    <div className="space-y-3 mb-6 flex-1">
                       {(mySuggestion?.films || []).map((film, i) => {
                         const sec     = SECTION_CONFIG[film.section] || SECTION_CONFIG.moyen;
                         const SecIcon = sec.icon;
@@ -777,11 +730,10 @@ export default function Suggestion({ onBack, currentTheme, user }) {
                         return (
                           <div
                             key={film.tmdbId}
-                            className="flex items-center gap-3 p-2.5 rounded-xl border group transition-all duration-200"
+                            className="flex items-center gap-3 p-3 rounded-xl border group transition-all duration-200"
                             style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-color)' }}
                           >
-                            {/* Mini poster */}
-                            <div className="w-9 h-12 rounded-lg overflow-hidden shrink-0 border" style={{ borderColor: 'var(--border-subtle)' }}>
+                            <div className="w-10 h-14 rounded-lg overflow-hidden shrink-0 border" style={{ borderColor: 'var(--border-subtle)' }}>
                               {film.posterUrl || film.posterPath ? (
                                 <img
                                   src={film.posterUrl || `${TMDB_IMG}${film.posterPath}`}
@@ -790,7 +742,7 @@ export default function Suggestion({ onBack, currentTheme, user }) {
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: 'var(--border-subtle)' }}>
-                                  <Film size={10} style={{ color: 'var(--text-muted)' }} />
+                                  <Film size={12} style={{ color: 'var(--text-muted)' }} />
                                 </div>
                               )}
                             </div>
@@ -798,26 +750,24 @@ export default function Suggestion({ onBack, currentTheme, user }) {
                               <p className="font-black text-xs uppercase tracking-tight truncate" style={{ color: 'var(--text-primary)' }}>
                                 {film.title}
                               </p>
-                              <div className={`inline-flex items-center gap-0.5 mt-0.5 px-1 py-0.5 text-[7px] font-black uppercase border ${sec.cls}`}>
-                                <SecIcon size={6} /> {sec.label}
+                              <div className={`inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase rounded-sm border ${sec.cls}`}>
+                                <SecIcon size={8} /> {sec.label}
                               </div>
                             </div>
-                            {/* Bouton retirer — seulement si canAdd (fenêtre ouverte) */}
-                            {canAdd && (
-                              <button
-                                onClick={() => handleRemove(film.tmdbId)}
-                                disabled={!!removing}
-                                className="w-6 h-6 flex items-center justify-center rounded-full border transition-all opacity-0 group-hover:opacity-100 disabled:opacity-30"
-                                style={{ borderColor: 'rgba(239,68,68,0.4)', color: '#ef4444' }}
-                                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'}
-                                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                              >
-                                {isRemoving
-                                  ? <Loader2 size={10} className="animate-spin" />
-                                  : <X size={10} />
-                                }
-                              </button>
-                            )}
+                            {/* Bouton retirer — Toujours visible pour ses propres films */}
+                            <button
+                              onClick={() => handleRemove(film.tmdbId)}
+                              disabled={!!removing}
+                              className="w-8 h-8 flex items-center justify-center rounded-full border transition-all opacity-0 group-hover:opacity-100 disabled:opacity-30"
+                              style={{ borderColor: 'rgba(239,68,68,0.4)', color: '#ef4444' }}
+                              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'}
+                              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              {isRemoving
+                                ? <Loader2 size={12} className="animate-spin" />
+                                : <X size={14} />
+                              }
+                            </button>
                           </div>
                         );
                       })}
@@ -828,48 +778,44 @@ export default function Suggestion({ onBack, currentTheme, user }) {
                   {canAdd && (
                     <button
                       onClick={() => setShowAddModal(true)}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border font-black text-xs uppercase tracking-widest transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                      className="w-full flex items-center justify-center gap-2 py-3.5 mt-auto rounded-xl border font-black text-xs uppercase tracking-widest transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                       style={{
                         backgroundColor: 'color-mix(in srgb, var(--accent-color) 10%, transparent)',
                         borderColor: 'color-mix(in srgb, var(--accent-color) 40%, transparent)',
                         color: 'var(--accent-color)',
                       }}
                     >
-                      <Plus size={13} strokeWidth={2.5} />
-                      Ajouter un film ({remaining} restant{remaining > 1 ? 's' : ''})
+                      <Plus size={14} strokeWidth={2.5} />
+                      Ajouter un film ({remaining})
                     </button>
                   )}
 
-                  {/* Message fenêtre fermée */}
+                  {/* Message quota atteint */}
                   {!canAdd && (
                     <div
-                      className="flex items-start gap-2 p-3 rounded-xl mt-2"
+                      className="flex items-start gap-3 p-4 rounded-xl mt-auto"
                       style={{ backgroundColor: 'color-mix(in srgb, var(--accent-color) 6%, transparent)', borderColor: 'color-mix(in srgb, var(--accent-color) 20%, transparent)' }}
                     >
-                      <Clock size={12} className="mt-0.5 shrink-0" style={{ color: 'var(--accent-color)' }} />
-                      <p className="text-[9px] font-bold leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                        {nextWindow
-                          ? `Tu pourras modifier ta sélection ${nextWindow}.`
-                          : 'La fenêtre d\'ajout est fermée pour cette semaine.'
-                        }
+                      <Clock size={16} className="mt-0.5 shrink-0" style={{ color: 'var(--accent-color)' }} />
+                      <p className="text-[10px] font-bold leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                        Tu as atteint la limite de 3 films. Modifie ta liste ou reviens dimanche pour une nouvelle semaine !
                       </p>
                     </div>
                   )}
 
                   {/* Règles */}
-                  <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-                    <p className="text-[8px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+                  <div className="mt-6 pt-5 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <p className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
                       Règles
                     </p>
-                    <ul className="space-y-1">
+                    <ul className="space-y-2">
                       {[
                         'Max 3 films par semaine',
-                        'Ajout : mardi toute la journée',
-                        'Ajout : mercredi avant 12h',
-                        'Reset chaque dimanche à minuit',
+                        'Ajout libre tout au long de la semaine',
+                        'Reset automatique chaque dimanche',
                       ].map((rule, i) => (
-                        <li key={i} className="flex items-center gap-1.5 text-[9px] font-medium" style={{ color: 'var(--text-muted)' }}>
-                          <div className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: 'var(--accent-color)', opacity: 0.5 }} />
+                        <li key={i} className="flex items-center gap-2 text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
+                          <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: 'var(--accent-color)', opacity: 0.7 }} />
                           {rule}
                         </li>
                       ))}
@@ -879,23 +825,23 @@ export default function Suggestion({ onBack, currentTheme, user }) {
               </div>
             </div>
 
-            {/* ── SUGGESTIONS DES AUTRES ──────────────────────────────────── */}
+            {/* -- SUGGESTIONS DES AUTRES ------------------------------------ */}
             {othersOnly.length > 0 && (
               <div className={`transform transition-all duration-1000 delay-400 ease-out ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-                <div className="flex items-center gap-3 mb-5">
-                  <Users size={14} style={{ color: 'var(--text-muted)' }} />
-                  <h2 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                <div className="flex items-center gap-3 mb-6">
+                  <Users size={16} style={{ color: 'var(--text-muted)' }} />
+                  <h2 className="text-sm font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
                     Sélections de la communauté
                   </h2>
                   <div
-                    className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border"
+                    className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border"
                     style={{ color: 'var(--accent-color)', borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)', backgroundColor: 'color-mix(in srgb, var(--accent-color) 8%, transparent)' }}
                   >
                     {othersOnly.length} cinéphile{othersOnly.length > 1 ? 's' : ''}
                   </div>
                 </div>
 
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   {othersOnly.map((entry, i) => (
                     <div
                       key={entry._id || i}
@@ -918,24 +864,24 @@ export default function Suggestion({ onBack, currentTheme, user }) {
             {suggestions.length === 0 && !loading && (
               <div className="flex flex-col items-center justify-center py-24 text-center">
                 <div
-                  className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-6 border ${isLight ? 'iconic-card-shimmer' : ''}`}
+                  className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-6 border shadow-sm ${isLight ? 'iconic-card-shimmer' : ''}`}
                   style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)' }}
                 >
-                  <Ticket size={32} style={{ color: 'var(--border-medium)' }} strokeWidth={1} />
+                  <Ticket size={40} style={{ color: 'var(--border-medium)' }} strokeWidth={1} />
                 </div>
-                <p className="font-black text-lg uppercase tracking-widest mb-2" style={{ color: 'var(--text-primary)' }}>
+                <p className="font-black text-xl uppercase tracking-widest mb-3" style={{ color: 'var(--text-primary)' }}>
                   Aucune suggestion cette semaine
                 </p>
-                <p className="text-sm mb-6 max-w-xs" style={{ color: 'var(--text-secondary)' }}>
-                  Sois le premier à partager tes coups de cœur cinéma de la semaine.
+                <p className="text-sm font-medium mb-8 max-w-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Sois le premier à partager tes coups de cœur cinéma de la semaine avec la communauté.
                 </p>
                 {canAdd && (
                   <button
                     onClick={() => setShowAddModal(true)}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:shadow-xl"
+                    className="flex items-center gap-2 px-8 py-4 rounded-xl font-black text-sm uppercase tracking-widest transition-all hover:-translate-y-1 hover:shadow-xl"
                     style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}
                   >
-                    <Plus size={16} /> Ajouter mon premier film
+                    <Plus size={18} strokeWidth={2.5} /> Ajouter mon premier film
                   </button>
                 )}
               </div>
@@ -944,7 +890,7 @@ export default function Suggestion({ onBack, currentTheme, user }) {
         )}
       </div>
 
-      {/* ── Modal ajout ───────────────────────────────────────────────────── */}
+      {/* -- Modal ajout ----------------------------------------------------- */}
       {showAddModal && (
         <AddFilmModal
           myFilms={myFilms}
@@ -954,13 +900,6 @@ export default function Suggestion({ onBack, currentTheme, user }) {
           isLight={isLight}
         />
       )}
-
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}} />
     </div>
   );
 }
