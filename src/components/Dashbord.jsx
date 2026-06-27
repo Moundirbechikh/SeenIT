@@ -1,46 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Plus, Clapperboard, Film, Popcorn,
   Star, Heart, Trophy, Mic2,
   ArrowRight, Stamp, Camera, Hand, ChevronRight, Crown, Loader2,
-  Award, ThumbsUp, Meh, ThumbsDown, Zap
+  Award, ThumbsUp, Meh, ThumbsDown, Zap, Sparkles
 } from 'lucide-react';
+import { fetchGoldActors } from '../utils/filmsApi';
 
-// --- CONSTANTES ---------------------------------------------------------------
-const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
+const TMDB_IMG    = 'https://image.tmdb.org/t/p/w500';
+const TMDB_IMG_SM = 'https://image.tmdb.org/t/p/w200';
 
-// 6 sections complètes avec couleurs
 const SECTION_COLORS = {
-  chefdoeuvre: {
-    label: "Chef-d'œuvre",
-    cls:   'bg-yellow-500 text-black border-yellow-300/60 shadow-[0_0_12px_rgba(234,179,8,0.4)]',
-    icon:  Crown,
-  },
-  elite: {
-    label: 'Élite',
-    cls:   'bg-purple-600 text-white border-purple-400/40 shadow-[0_0_12px_rgba(147,51,234,0.5)]',
-    icon:  Award,
-  },
-  bien: {
-    label: 'Bien',
-    cls:   'bg-emerald-600 text-white border-emerald-400/40',
-    icon:  ThumbsUp,
-  },
-  moyen: {
-    label: 'Moyen',
-    cls:   'bg-amber-500 text-slate-950 border-amber-300/40',
-    icon:  Meh,
-  },
-  decu: {
-    label: 'Déçu',
-    cls:   'bg-orange-600 text-white border-orange-400/40',
-    icon:  ThumbsDown,
-  },
-  navet: {
-    label: 'Navet',
-    cls:   'bg-rose-600 text-white border-rose-400/40',
-    icon:  Zap,
-  },
+  chefdoeuvre: { label: "Chef-d'œuvre", cls: 'bg-yellow-500 text-black border-yellow-300/60 shadow-[0_0_12px_rgba(234,179,8,0.4)]', icon: Crown },
+  elite:       { label: 'Élite',        cls: 'bg-purple-600 text-white border-purple-400/40 shadow-[0_0_12px_rgba(147,51,234,0.5)]', icon: Award },
+  bien:        { label: 'Bien',         cls: 'bg-emerald-600 text-white border-emerald-400/40', icon: ThumbsUp },
+  moyen:       { label: 'Moyen',        cls: 'bg-amber-500 text-slate-950 border-amber-300/40', icon: Meh },
+  decu:        { label: 'Déçu',         cls: 'bg-orange-600 text-white border-orange-400/40',   icon: ThumbsDown },
+  navet:       { label: 'Navet',        cls: 'bg-rose-600 text-white border-rose-400/40',       icon: Zap },
 };
 
 function useThemeStyles() {
@@ -56,13 +32,11 @@ function useThemeStyles() {
   };
 }
 
-// Formate la date de visionnage (watchedAt) en texte relatif
 function formatWatchedAt(dateStr) {
   if (!dateStr) return 'Récemment';
   const date     = new Date(dateStr);
   const now      = new Date();
-  const diffMs   = now - date;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
   if (diffDays === 0) return "Aujourd'hui";
   if (diffDays === 1) return 'Hier soir';
   if (diffDays < 7)  return `Il y a ${diffDays} jours`;
@@ -70,67 +44,55 @@ function formatWatchedAt(dateStr) {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 }
 
-// --- COMPOSANT PRINCIPAL ------------------------------------------------------
-export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, user, stats, films = [], loading }) {
+// ─── COMPOSANT PRINCIPAL ──────────────────────────────────────────────────────
+export default function Dashboard({
+  onGoToSearch, onGoToFilms, onGoToFilmsByActor,
+  currentTheme, user, stats, films = [], loading
+}) {
   const isLight = currentTheme?.isLight || false;
   const ts = useThemeStyles();
 
-  // ── LOGIQUE DE SÉCURISATION ET FORMATAGE DU USERNAME ──────────────────────
-  // 1. Récupération brute du nom
-  const rawUserName = user?.username
-    || (user?.email ? user.email.split('@')[0] : null)
-    || 'Cinéphile';
-
-  // 2. Traitement du format (Ex: "bechikh moundir" → "B.Moundir")
-  let userName = rawUserName;
-  const nameParts = rawUserName.trim().split(/\s+/); // Découpe sur les espaces
-
+  // ── Username formaté ───────────────────────────────────────────────────────
+  const rawUserName  = user?.username || (user?.email ? user.email.split('@')[0] : null) || 'Cinéphile';
+  let   userName     = rawUserName;
+  const nameParts    = rawUserName.trim().split(/\s+/);
   if (nameParts.length >= 2) {
-    const firstPart = nameParts[0];
-    const secondPart = nameParts[1];
-    
-    // Vérification des critères : premier mot > 6 lettres ET deuxième mot > 3 lettres
-    if (firstPart.length > 6 && secondPart.length > 3) {
-      const initial = firstPart.charAt(0).toUpperCase();
-      const cleanSecondPart = secondPart.charAt(0).toUpperCase() + secondPart.slice(1);
-      userName = `${initial}.${cleanSecondPart}`;
+    const [first, second] = nameParts;
+    if (first.length > 6 && second.length > 3) {
+      userName = `${first.charAt(0).toUpperCase()}.${second.charAt(0).toUpperCase()}${second.slice(1)}`;
     }
   }
-  // ──────────────────────────────────────────────────────────────────────────
 
-  // -- Stats depuis les props -------------------------------------------------
-  const totalFilms      = stats?.total           || 0;
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  const totalFilms       = stats?.total            || 0;
   const chefdoeuvreCount = stats?.chefdoeuvreCount || 0;
-  const eliteCount      = stats?.eliteCount      || 0;
-  const topCount        = chefdoeuvreCount + eliteCount; // chefs-d'œuvre + élite
-  const heartCount      = stats?.heartCount      || 0;
-  const favCount        = stats?.favCount        || 0;   // isFavorite (étoile jaune)
-  const favoriteGenre   = stats?.favoriteGenre   || '—';
+  const eliteCount       = stats?.eliteCount       || 0;
+  const topCount         = chefdoeuvreCount + eliteCount;
+  const heartCount       = stats?.heartCount       || 0;
+  const favCount         = stats?.favCount         || 0;
+  const favoriteGenre    = stats?.favoriteGenre    || '—';
 
-  // -- Dernier film vu (watchedAt, pas release date) -------------------------
   const rawLastFilm = stats?.lastFilm || null;
   const lastFilm = rawLastFilm ? {
     title:     rawLastFilm.title,
-    year:      rawLastFilm.year,       // infos du film (affiché dans le ticket)
+    year:      rawLastFilm.year,
     rating:    rawLastFilm.rating    || 3,
     section:   rawLastFilm.section   || 'moyen',
     posterUrl: rawLastFilm.posterPath ? `${TMDB_IMG}${rawLastFilm.posterPath}` : '',
-    watchedAt: formatWatchedAt(rawLastFilm.watchedAt), // ? date de VISIONNAGE
+    watchedAt: formatWatchedAt(rawLastFilm.watchedAt),
     comment:   rawLastFilm.comment   || '',
   } : null;
 
-  // -- Coups de cœur ---------------------------------------------------------
   const heartFilmsList = (stats?.heartFilms || []).map(f => ({
-    title:     f.title,
-    year:      f.year,
-    rating:    f.rating   || 3,
-    section:   f.section  || 'moyen',
+    title:     f.title, year: f.year,
+    rating:    f.rating  || 3,
+    section:   f.section || 'moyen',
     posterUrl: f.posterPath ? `${TMDB_IMG}${f.posterPath}` : '',
     watchedAt: formatWatchedAt(f.watchedAt),
-    comment:   f.comment  || '',
+    comment:   f.comment || '',
   }));
 
-  // -- Acteur le plus fréquent ------------------------------------------------
+  // ── Acteur récurrent (inchangé) ───────────────────────────────────────────
   const actorMap = {};
   films.filter(Boolean).forEach(film => {
     (film.actors || []).forEach(actor => {
@@ -143,7 +105,28 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
   const favoriteActor      = favoriteActorEntry?.name || '—';
   const favoriteActorImg   = favoriteActorEntry?.img  || '';
 
-  // -- États locaux ----------------------------------------------------------
+  // ── Acteurs Gold (hearts === 4) ───────────────────────────────────────────
+  const [goldActors,    setGoldActors]    = useState([]);
+  const [goldIndex,     setGoldIndex]     = useState(0);
+  const [goldLoaded,    setGoldLoaded]    = useState(false);
+
+  useEffect(() => {
+    fetchGoldActors()
+      .then(actors => { setGoldActors(actors); setGoldLoaded(true); })
+      .catch(() => setGoldLoaded(true));
+  }, []);
+
+  // Rotation automatique des acteurs Gold (toutes les 10s comme les coups de cœur)
+  useEffect(() => {
+    if (goldActors.length <= 1) return;
+    const t = setInterval(() => setGoldIndex(p => (p + 1) % goldActors.length), 10000);
+    return () => clearInterval(t);
+  }, [goldActors.length]);
+
+  const currentGoldActor = goldActors[goldIndex] || null;
+  const hasGoldActors    = goldActors.length > 0;
+
+  // ── États locaux ───────────────────────────────────────────────────────────
   const [mounted,       setMounted]       = useState(false);
   const [activeCard,    setActiveCard]    = useState(null);
   const [heartIndex,    setHeartIndex]    = useState(0);
@@ -191,6 +174,122 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
     </div>
   );
 
+  // ── Card acteur Gold (partagée desktop + mobile) ──────────────────────────
+  const renderGoldActorCard = (compact = false) => {
+    if (!hasGoldActors || !currentGoldActor) return null;
+    const imgSrc = currentGoldActor.actorImg
+      ? `${TMDB_IMG_SM}${currentGoldActor.actorImg}`
+      : '';
+
+    return (
+      <div
+        onClick={() => onGoToFilmsByActor?.(currentGoldActor.actorName)}
+        className={`group relative rounded-2xl border p-${compact ? '6' : '5'} overflow-hidden cursor-pointer select-none transition-all duration-500 ${isLight ? 'iconic-card-shimmer' : ''}`}
+        style={{
+          backgroundColor: 'var(--card-color)',
+          borderColor:     profileActive === 'gold'
+            ? 'rgba(201,150,12,0.5)'
+            : 'var(--border-subtle)',
+          transform:  profileActive === 'gold' ? 'translateY(-4px)' : 'translateY(0)',
+          boxShadow:  profileActive === 'gold'
+            ? '0 12px 32px rgba(201,150,12,0.15)'
+            : 'none',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.borderColor = 'rgba(201,150,12,0.5)';
+          e.currentTarget.style.boxShadow   = '0 12px 32px rgba(201,150,12,0.12)';
+          e.currentTarget.style.transform   = 'translateY(-4px)';
+          setProfileActive('gold');
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.borderColor = 'var(--border-subtle)';
+          e.currentTarget.style.boxShadow   = 'none';
+          e.currentTarget.style.transform   = 'translateY(0)';
+          setProfileActive(null);
+        }}
+      >
+        {/* Fond shimmer Gold subtil */}
+        <div
+          className="absolute inset-0 transition-opacity duration-500 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at 70% 50%, rgba(201,150,12,0.08), transparent 70%)',
+            opacity: profileActive === 'gold' ? 1 : 0,
+          }}
+        />
+
+        {/* Indicateur de rotation */}
+        {goldActors.length > 1 && (
+          <div className="absolute top-3 right-3 flex gap-1 z-10">
+            {goldActors.map((_, i) => (
+              <div key={i}
+                className="h-1 rounded-full transition-all duration-300"
+                style={{
+                  width:           i === goldIndex ? '14px' : '4px',
+                  backgroundColor: i === goldIndex ? '#C9960C' : 'rgba(201,150,12,0.25)',
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="relative z-10 flex items-center gap-4 h-full">
+          {/* Avatar Gold */}
+          <div className="relative shrink-0">
+            <div
+              className={`${compact ? 'w-16 h-16' : 'w-14 h-14'} rounded-full overflow-hidden border-2 transition-all duration-500`}
+              style={{
+                borderColor: '#C9960C',
+                boxShadow:   '0 0 12px rgba(201,150,12,0.4)',
+              }}
+            >
+              {imgSrc ? (
+                <img
+                  src={imgSrc}
+                  alt={currentGoldActor.actorName}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center text-xl font-black"
+                  style={{ backgroundColor: 'rgba(201,150,12,0.15)', color: '#C9960C' }}
+                >
+                  {currentGoldActor.actorName.charAt(0)}
+                </div>
+              )}
+            </div>
+            {/* Badge Gold */}
+            <div
+              className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
+              style={{ backgroundColor: '#C9960C', borderColor: 'var(--bg-color)' }}
+            >
+              <Heart size={9} fill="white" style={{ color: 'white' }} />
+            </div>
+          </div>
+
+          {/* Infos */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Sparkles size={9} style={{ color: '#C9960C' }} />
+              <span className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: '#C9960C' }}>
+                Acteur Gold
+              </span>
+            </div>
+            <p
+              className="text-xl font-black tracking-tighter leading-none mb-1 transition-colors duration-300"
+              style={{ color: profileActive === 'gold' ? '#C9960C' : 'var(--text-primary)' }}
+            >
+              {currentGoldActor.actorName}
+            </p>
+            <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+              Voir ses films
+              <ChevronRight size={10} className="group-hover:translate-x-1 transition-transform duration-300" style={{ color: '#C9960C' }} />
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex-1 w-full relative min-h-screen" style={ts.bgMain}>
 
@@ -204,7 +303,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8 lg:py-0">
 
-        {/* --------------- DESKTOP --------------- */}
+        {/* ═══════════════════ DESKTOP ═══════════════════ */}
         <section className="hidden lg:flex min-h-[calc(100vh-80px)] flex-col relative z-20">
           <div className="flex-1 flex items-center justify-center gap-16 w-full py-8">
 
@@ -221,7 +320,6 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                 <IconicBadge />
               </h1>
 
-              {/* Texte : chefs-d'œuvre + élite (topCount) */}
               <p className="text-lg font-medium leading-relaxed max-w-xl mb-5" style={ts.textSecondary}>
                 Merci d'avoir choisi SeenIt pour archiver ta passion du cinéma.<br />
                 Tu as déjà archivé{' '}
@@ -236,7 +334,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                 Prêt pour la prochaine pépite ?
               </p>
 
-              {/* Profil cinéphile */}
+              {/* Profil cinéphile desktop */}
               <div>
                 <h2 className="text-xl font-black tracking-tighter uppercase mb-4 flex items-center gap-3" style={ts.textPrimary}>
                   Ton profil{' '}
@@ -244,7 +342,9 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                     cinéphile
                   </span>
                 </h2>
-                <div className="grid grid-cols-2 gap-4">
+
+                {/* Grid 2 colonnes, 3 si Gold actor présent */}
+                <div className={`grid gap-4 ${hasGoldActors ? 'grid-cols-3' : 'grid-cols-2'}`}>
 
                   {/* Card Genre */}
                   <div className={`group relative rounded-2xl border p-6 overflow-hidden cursor-default transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.15)] ${isLight ? 'iconic-card-shimmer' : ''}`}
@@ -261,7 +361,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                         <span className="text-[9px] font-black uppercase tracking-widest" style={ts.textMuted}>Genre dominant</span>
                       </div>
                       {totalFilms === 0
-                        ? <p className="text-lg font-black leading-none mb-1.5" style={ts.textMuted}>Pas encore de films</p>
+                        ? <p className="text-lg font-black leading-none mb-1.5" style={ts.textMuted}>Pas encore</p>
                         : <p className="text-4xl font-black tracking-tighter leading-none mb-1.5 transition-colors duration-300 group-hover:text-[var(--accent-color)]" style={ts.textPrimary}>{favoriteGenre}</p>
                       }
                       <p className="text-[10px] font-bold uppercase tracking-widest" style={ts.textMuted}>
@@ -270,7 +370,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                     </div>
                   </div>
 
-                  {/* Card Acteur */}
+                  {/* Card Acteur récurrent */}
                   <div className={`group relative rounded-2xl border p-5 overflow-hidden cursor-default transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.15)] ${isLight ? 'iconic-card-shimmer' : ''}`}
                     style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)' }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--accent-color) 40%, transparent)'}
@@ -308,6 +408,9 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                       )}
                     </div>
                   </div>
+
+                  {/* Card Acteur Gold — seulement si hasGoldActors */}
+                  {hasGoldActors && renderGoldActorCard(false)}
                 </div>
               </div>
             </div>
@@ -316,7 +419,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
             <div className={`flex-1 relative h-[480px] flex justify-center items-center transform transition-all duration-1000 delay-300 ease-out ${mounted ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'}`}>
               {lastFilm ? (
                 <>
-                  {/* Ticket critique (watchedAt = date visionnage) */}
+                  {/* Ticket critique */}
                   <div
                     className={`absolute left-4 xl:left-10 w-60 h-[400px] border shadow-2xl flex flex-col items-center justify-center p-7 text-center -rotate-6 z-10 hover:rotate-0 hover:z-30 hover:scale-105 transition-all duration-300 cursor-pointer ${isLight ? 'iconic-card-shimmer' : ''}`}
                     style={{
@@ -340,13 +443,8 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                         ))}
                       </div>
                       <h3 className="text-xl font-black tracking-tighter uppercase mb-1" style={ts.textPrimary}>{lastFilm.title}</h3>
-                      {/* ? watchedAt = date de visionnage, year = année de sortie du film */}
-                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={ts.textAccent}>
-                        Vu {lastFilm.watchedAt}
-                      </p>
-                      <p className="text-[9px] font-bold uppercase tracking-widest mb-4" style={ts.textMuted}>
-                        Sorti en {lastFilm.year}
-                      </p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={ts.textAccent}>Vu {lastFilm.watchedAt}</p>
+                      <p className="text-[9px] font-bold uppercase tracking-widest mb-4" style={ts.textMuted}>Sorti en {lastFilm.year}</p>
                       {lastFilm.comment && (
                         <p className="text-sm font-black tracking-tighter leading-snug p-3 rounded-lg"
                           style={{ ...ts.textPrimary, backgroundColor: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)' }}>
@@ -376,9 +474,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                           ))}
                         </div>
                         <h3 className="font-black text-white text-xl uppercase tracking-tight">{lastFilm.title}</h3>
-                        <p className="text-[10px] font-bold uppercase tracking-widest mt-0.5" style={{ color: 'var(--accent-color)' }}>
-                          Vu {lastFilm.watchedAt}
-                        </p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mt-0.5" style={{ color: 'var(--accent-color)' }}>Vu {lastFilm.watchedAt}</p>
                       </div>
                     </div>
                     <div className={`absolute top-4 left-4 px-2.5 py-1 text-[9px] font-black tracking-[0.15em] uppercase rounded border backdrop-blur-md ${sec.cls}`}>
@@ -402,8 +498,6 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
 
           {/* BANDE BAS DESKTOP */}
           <div className="grid grid-cols-[auto_1fr] gap-5 pb-10 items-stretch">
-
-            {/* Card "Prouve-le" */}
             <div
               className={`relative w-72 xl:w-96 rounded-2xl overflow-hidden border cursor-pointer group transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:scale-[0.99] ${isLight ? 'iconic-card-shimmer' : ''}`}
               style={{ borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)', background: 'color-mix(in srgb, var(--accent-color) 8%, var(--card-color))' }}
@@ -439,34 +533,22 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
               </div>
             </div>
 
-            {/* 3 boutons navigation — Favoris (isFavorite), Coups de cœur, Stats */}
             <div className="flex flex-col gap-3">
               {[
                 {
-                  icon:   Star,
-                  label:  'Mes Favoris',
-                  // ? favCount = films marqués isFavorite (étoile jaune), PAS les élites
-                  sub:    favCount > 0
-                    ? `${favCount} film${favCount > 1 ? 's' : ''} marqué${favCount > 1 ? 's' : ''} en favori`
-                    : 'Marque des films avec ? pour les retrouver ici',
-                  tag:    'FAVS',
-                  action: () => onGoToFilms('favorite'),
+                  icon: Star, label: 'Mes Favoris',
+                  sub:  favCount > 0 ? `${favCount} film${favCount > 1 ? 's' : ''} marqué${favCount > 1 ? 's' : ''} en favori` : 'Marque des films avec ★ pour les retrouver ici',
+                  tag: 'FAVS', action: () => onGoToFilms('favorite'),
                 },
                 {
-                  icon:   Heart,
-                  label:  'Coups de Cœur',
-                  sub:    heartCount > 0
-                    ? `${heartCount} film${heartCount > 1 ? 's' : ''} qui t'ont marqué`
-                    : 'Marque des films en coup de cœur',
-                  tag:    '??',
-                  action: () => onGoToFilms('heart'),
+                  icon: Heart, label: 'Coups de Cœur',
+                  sub:  heartCount > 0 ? `${heartCount} film${heartCount > 1 ? 's' : ''} qui t'ont marqué` : 'Marque des films en coup de cœur',
+                  tag: '❤️', action: () => onGoToFilms('heart'),
                 },
                 {
-                  icon:   Camera,
-                  label:  'Sélection hebdo',
-                  sub:    "Tes stats de la semaine en un coup d'œil",
-                  tag:    'STATS',
-                  action: () => {},
+                  icon: Camera, label: 'Sélection hebdo',
+                  sub:  "Tes stats de la semaine en un coup d'œil",
+                  tag: 'STATS', action: () => {},
                 },
               ].map(({ icon: Icon, label, sub, tag, action }) => (
                 <button key={label} onClick={action}
@@ -497,10 +579,10 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
           </div>
         </section>
 
-        {/* --------------- MOBILE + TABLETTE --------------- */}
+        {/* ═══════════════════ MOBILE + TABLETTE ═══════════════════ */}
         <div className="lg:hidden">
 
-          {/* 1. SALUTATION */}
+          {/* 1. Salutation */}
           <div className={`mb-8 pt-4 text-center transform transition-all duration-700 ease-out ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
             <h1 className="text-center font-black tracking-tighter leading-[0.95] text-5xl sm:text-6xl mb-4" style={ts.textPrimary}>
               RAVI DE TE REVOIR,<br />
@@ -519,17 +601,15 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
               )}
             </h1>
             <p className="text-md font-medium mt-4 tracking-wide text-center" style={ts.textSecondary}>
-            Merci d'avoir choisi SeenIt pour archiver ta passion du cinéma. Tu as déjà archivé{' '}
+              Merci d'avoir choisi SeenIt. Tu as déjà archivé{' '}
               <span className="font-bold" style={ts.textPrimary}>{totalFilms}</span> film{totalFilms > 1 ? 's' : ''}
-              {topCount > 0 && (
-                <> · <span className="font-bold" style={ts.textAccent}>{topCount} top</span></>
-              )}
+              {topCount > 0 && <> · <span className="font-bold" style={ts.textAccent}>{topCount} top</span></>}
             </p>
           </div>
 
           <div className="h-px w-full mb-8" style={{ backgroundColor: 'var(--border-subtle)' }} />
 
-          {/* 2. CARTES FILMS */}
+          {/* 2. Cartes films (inchangées) */}
           <div className="mb-10">
             <div className="overflow-hidden transition-all duration-500 ease-out"
               style={{ maxHeight: contextTitle ? '60px' : '0px', opacity: contextTitle ? 1 : 0, marginBottom: contextTitle ? '16px' : '0px' }}>
@@ -556,8 +636,6 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
             ) : (
               <>
                 <div className="relative flex justify-center items-center w-full h-[360px] sm:h-[400px]">
-
-                  {/* Card A : Dernier film */}
                   {lastFilm && (
                     <div onClick={() => setActiveCard(p => p === 'last' ? null : 'last')}
                       className="absolute w-60 h-[340px] sm:w-64 sm:h-[380px] shadow-2xl overflow-hidden cursor-pointer select-none border-2 transition-all duration-400 origin-bottom"
@@ -571,19 +649,13 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                         : <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: 'var(--border-subtle)' }}><Film size={50} style={ts.textMuted} strokeWidth={1} /></div>
                       }
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                      <div className={`absolute top-3 left-3 px-2 py-0.5 text-[8px] font-black tracking-[0.15em] uppercase rounded border backdrop-blur-md ${sec.cls}`}>
-                        {sec.label}
-                      </div>
+                      <div className={`absolute top-3 left-3 px-2 py-0.5 text-[8px] font-black tracking-[0.15em] uppercase rounded border backdrop-blur-md ${sec.cls}`}>{sec.label}</div>
                       <div className="absolute bottom-0 left-0 right-0 p-4 text-left">
-                        <p className="text-[9px] font-black uppercase tracking-widest mb-0.5 text-white/50">
-                          Vu {lastFilm.watchedAt}
-                        </p>
+                        <p className="text-[9px] font-black uppercase tracking-widest mb-0.5 text-white/50">Vu {lastFilm.watchedAt}</p>
                         <p className="text-sm font-black text-white uppercase tracking-tight leading-tight">{lastFilm.title}</p>
                       </div>
                     </div>
                   )}
-
-                  {/* Card B : Coup de cœur */}
                   {heartFilm ? (
                     <div onClick={() => setActiveCard(p => p === 'heart' ? null : 'heart')}
                       className="absolute w-60 h-[340px] sm:w-64 sm:h-[380px] shadow-2xl overflow-hidden cursor-pointer select-none border-2 transition-all duration-400 origin-bottom"
@@ -643,7 +715,7 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                   </div>
                   <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
                     {detailFilm ? (
-                      <div className="w-full animate-[fadeInUp_0.4s_ease-out]">
+                      <div className="w-full">
                         <div className="flex justify-center gap-1 mb-3">
                           {[...Array(5)].map((_, i) => (
                             <Star key={i} size={16} fill={i < detailFilm.rating ? 'currentColor' : 'none'}
@@ -651,13 +723,8 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                           ))}
                         </div>
                         <h3 className="text-xl font-black tracking-tighter uppercase mb-1" style={ts.textPrimary}>{detailFilm.title}</h3>
-                        {/* Date visionnage */}
-                        <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={ts.textAccent}>
-                          Vu {detailFilm.watchedAt}
-                        </p>
-                        <p className="text-[9px] font-bold uppercase tracking-widest mb-3" style={ts.textMuted}>
-                          Sorti en {detailFilm.year}
-                        </p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={ts.textAccent}>Vu {detailFilm.watchedAt}</p>
+                        <p className="text-[9px] font-bold uppercase tracking-widest mb-3" style={ts.textMuted}>Sorti en {detailFilm.year}</p>
                         {detailFilm.comment && (
                           <p className="text-sm font-black tracking-tighter leading-snug p-3 rounded-lg"
                             style={{ ...ts.textPrimary, backgroundColor: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)' }}>
@@ -694,17 +761,23 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
             )}
           </div>
 
-          {/* 3. PROFIL MOBILE */}
+          {/* 3. Profil cinéphile mobile — avec 3 cards si Gold actor */}
           <div className="mb-12">
             <h2 className="text-2xl sm:text-3xl font-black tracking-tighter uppercase mb-6" style={ts.textPrimary}>
               Ton profil{' '}
               <span className="inline-block px-2 shadow-xl" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>cinéphile</span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
               {/* Card Genre */}
               <div onClick={() => setProfileActive(p => p === 'genre' ? null : 'genre')}
                 className={`relative rounded-2xl border p-6 overflow-hidden cursor-pointer select-none transition-all duration-500 ${isLight ? 'iconic-card-shimmer' : ''}`}
-                style={{ backgroundColor: 'var(--card-color)', borderColor: profileActive === 'genre' ? 'color-mix(in srgb, var(--accent-color) 40%, transparent)' : 'var(--border-subtle)', transform: profileActive === 'genre' ? 'translateY(-4px)' : 'translateY(0)', boxShadow: profileActive === 'genre' ? '0 12px 32px rgba(0,0,0,0.12)' : 'none' }}>
+                style={{
+                  backgroundColor: 'var(--card-color)',
+                  borderColor: profileActive === 'genre' ? 'color-mix(in srgb, var(--accent-color) 40%, transparent)' : 'var(--border-subtle)',
+                  transform: profileActive === 'genre' ? 'translateY(-4px)' : 'translateY(0)',
+                  boxShadow: profileActive === 'genre' ? '0 12px 32px rgba(0,0,0,0.12)' : 'none',
+                }}>
                 <div className="absolute inset-0 transition-opacity duration-500 pointer-events-none"
                   style={{ background: 'radial-gradient(ellipse at 30% 50%, color-mix(in srgb, var(--accent-color) 10%, transparent), transparent 70%)', opacity: profileActive === 'genre' ? 1 : 0 }} />
                 <div className="relative z-10">
@@ -722,10 +795,15 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                 </div>
               </div>
 
-              {/* Card Acteur */}
+              {/* Card Acteur récurrent */}
               <div onClick={() => setProfileActive(p => p === 'actor' ? null : 'actor')}
                 className={`relative rounded-2xl border p-6 overflow-hidden cursor-pointer select-none transition-all duration-500 ${isLight ? 'iconic-card-shimmer' : ''}`}
-                style={{ backgroundColor: 'var(--card-color)', borderColor: profileActive === 'actor' ? 'color-mix(in srgb, var(--accent-color) 40%, transparent)' : 'var(--border-subtle)', transform: profileActive === 'actor' ? 'translateY(-4px)' : 'translateY(0)', boxShadow: profileActive === 'actor' ? '0 12px 32px rgba(0,0,0,0.12)' : 'none' }}>
+                style={{
+                  backgroundColor: 'var(--card-color)',
+                  borderColor: profileActive === 'actor' ? 'color-mix(in srgb, var(--accent-color) 40%, transparent)' : 'var(--border-subtle)',
+                  transform: profileActive === 'actor' ? 'translateY(-4px)' : 'translateY(0)',
+                  boxShadow: profileActive === 'actor' ? '0 12px 32px rgba(0,0,0,0.12)' : 'none',
+                }}>
                 <div className="absolute inset-0 transition-opacity duration-500 pointer-events-none"
                   style={{ background: 'radial-gradient(ellipse at 70% 50%, color-mix(in srgb, var(--accent-color) 10%, transparent), transparent 70%)', opacity: profileActive === 'actor' ? 1 : 0 }} />
                 <div className="relative z-10">
@@ -759,17 +837,24 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm font-black tracking-tight" style={ts.textMuted}>Archive des films pour découvrir ton actor favori</p>
+                    <p className="text-sm font-black tracking-tight" style={ts.textMuted}>Archive des films pour découvrir ton acteur favori</p>
                   )}
                 </div>
               </div>
+
+              {/* Card Acteur Gold — seulement si y'en a */}
+              {hasGoldActors && goldLoaded && (
+                <div className="sm:col-span-2">
+                  {renderGoldActorCard(true)}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* 4. AJOUT + BOUTONS MOBILE */}
+          {/* 4. Ajout + Boutons mobile */}
           <div className="grid grid-cols-1 gap-6 pb-8">
-            {/* Card Prouve-le */}
-            <div className={`relative rounded-2xl overflow-hidden border cursor-pointer group transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:scale-[0.99] ${isLight ? 'iconic-card-shimmer' : ''}`}
+            <div
+              className={`relative rounded-2xl overflow-hidden border cursor-pointer group transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:scale-[0.99] ${isLight ? 'iconic-card-shimmer' : ''}`}
               style={{ borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)', background: 'color-mix(in srgb, var(--accent-color) 8%, var(--card-color))' }}
               onClick={onGoToSearch}>
               <div className="absolute left-0 top-0 bottom-0 w-3.5 opacity-25 group-hover:opacity-40 transition-opacity" style={{ backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 12px, var(--accent-color) 12px, var(--accent-color) 24px)' }} />
@@ -797,17 +882,16 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
               </div>
             </div>
 
-            {/* 3 boutons mobile — Favoris (isFavorite), Coups de cœur, Stats */}
             <div className="flex flex-col gap-3">
               {[
                 {
                   icon: Star, label: 'Mes', labelAccent: 'Favoris',
-                  sub:  favCount > 0 ? `${favCount} film${favCount > 1 ? 's' : ''} en favori` : 'Aucun favori pour l\'instant',
+                  sub:  favCount > 0 ? `${favCount} film${favCount > 1 ? 's' : ''} en favori` : "Aucun favori pour l'instant",
                   key: 'fav', action: () => onGoToFilms('favorite'),
                 },
                 {
                   icon: Heart, label: 'Coups de', labelAccent: 'Cœur',
-                  sub:  heartCount > 0 ? `${heartCount} film${heartCount > 1 ? 's' : ''} qui t'ont marqué` : 'Aucun coup de cœur pour l\'instant',
+                  sub:  heartCount > 0 ? `${heartCount} film${heartCount > 1 ? 's' : ''} qui t'ont marqué` : "Aucun coup de cœur pour l'instant",
                   key: 'heart', action: () => onGoToFilms('heart'),
                 },
                 {
@@ -818,7 +902,12 @@ export default function Dashboard({ onGoToSearch, onGoToFilms, currentTheme, use
               ].map(({ icon: Icon, label, labelAccent, sub, key, action }) => (
                 <button key={key} onClick={() => handleBtnClick(key, action)}
                   className={`flex-1 flex items-center gap-5 p-5 rounded-3xl border transition-all text-left active:scale-[0.985] select-none relative overflow-hidden ${isLight ? 'iconic-card-shimmer' : ''}`}
-                  style={{ backgroundColor: 'var(--card-color)', borderColor: clickedBtn === key ? 'color-mix(in srgb, var(--accent-color) 40%, transparent)' : 'var(--border-subtle)', transform: clickedBtn === key ? 'translateY(-3px)' : 'translateY(0)', transition: 'all 0.5s ease' }}>
+                  style={{
+                    backgroundColor: 'var(--card-color)',
+                    borderColor: clickedBtn === key ? 'color-mix(in srgb, var(--accent-color) 40%, transparent)' : 'var(--border-subtle)',
+                    transform: clickedBtn === key ? 'translateY(-3px)' : 'translateY(0)',
+                    transition: 'all 0.5s ease',
+                  }}>
                   <div className="absolute inset-0 pointer-events-none transition-opacity duration-500"
                     style={{ background: 'linear-gradient(90deg, color-mix(in srgb, var(--accent-color) 8%, transparent) 0%, transparent 60%)', opacity: clickedBtn === key ? 1 : 0 }} />
                   <div className="relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-500"

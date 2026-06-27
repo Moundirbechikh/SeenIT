@@ -4,7 +4,6 @@ import SearchAdd from '../components/Searchadd';
 import Films     from './Films';
 import { fetchMyFilms, fetchStats, toggleFlag } from '../utils/filmsApi';
 
-// onIconicUnlock : callback vers App.jsx pour mettre à jour user.iconique en temps réel
 export default function UserInterface({ currentTheme, user, onLogout, onIconicUnlock }) {
   const [view,          setView]          = useState('dashboard');
   const [films,         setFilms]         = useState([]);
@@ -12,7 +11,10 @@ export default function UserInterface({ currentTheme, user, onLogout, onIconicUn
   const [loading,       setLoading]       = useState(true);
   const [initialFilter, setInitialFilter] = useState('tous');
 
-  // ── Chargement initial ─────────────────────────────────────────────────────
+  // 🆕 Filtre acteur : quand on clique sur un acteur Gold dans le dashboard
+  // → Films s'ouvre avec ce nom pré-rempli dans la recherche
+  const [actorSearch,   setActorSearch]   = useState('');
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -28,54 +30,43 @@ export default function UserInterface({ currentTheme, user, onLogout, onIconicUn
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // ── Logo → dashboard ───────────────────────────────────────────────────────
   useEffect(() => {
-    const goHome = () => setView('dashboard');
+    const goHome = () => { setView('dashboard'); };
     window.addEventListener('seenit:go-dashboard', goHome);
     return () => window.removeEventListener('seenit:go-dashboard', goHome);
   }, []);
 
-  // ── Ajout d'un film ────────────────────────────────────────────────────────
   const handleFilmAdded = (newFilm) => {
     const updatedFilms = [newFilm, ...films];
     setFilms(updatedFilms);
-
-    // Recharge les stats
     fetchStats().then(setStats).catch(() => {});
     setView('films');
-
-    // 🔑 Vérification Iconic : si on vient d'atteindre 100 films
-    // Le backend a déjà mis iconique: true en BDD lors du addFilm.
-    // Si le film renvoyé par l'API contient un champ `iconique: true` (optionnel),
-    // on notifie App.jsx pour mettre à jour le state en temps réel.
-    if (newFilm.iconique === true && !user?.iconique) {
-      onIconicUnlock?.();
-    }
-
-    // Alternative : on compare le count local
-    if (updatedFilms.length >= 100 && !user?.iconique) {
-      onIconicUnlock?.();
-    }
+    if (newFilm.iconique === true && !user?.iconique) onIconicUnlock?.();
+    if (updatedFilms.length >= 100 && !user?.iconique) onIconicUnlock?.();
   };
 
-  // ── Toggle favori / coup de cœur (optimiste) ──────────────────────────────
   const handleToggle = async (filmId, field) => {
     setFilms(prev => prev.map(f => f._id === filmId ? { ...f, [field]: !f[field] } : f));
     try {
       await toggleFlag(filmId, field);
     } catch {
-      // Rollback si erreur
       setFilms(prev => prev.map(f => f._id === filmId ? { ...f, [field]: !f[field] } : f));
     }
   };
 
-  // ── Navigation avec filtre ─────────────────────────────────────────────────
   const goToFilms = (filter = 'tous') => {
     setInitialFilter(filter);
+    setActorSearch('');   // reset acteur
     setView('films');
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // 🆕 Aller vers Films filtré par acteur (depuis le dashboard)
+  const goToFilmsByActor = (actorName) => {
+    setInitialFilter('tous');
+    setActorSearch(actorName);
+    setView('films');
+  };
+
   switch (view) {
     case 'search':
       return (
@@ -92,7 +83,8 @@ export default function UserInterface({ currentTheme, user, onLogout, onIconicUn
           films={films}
           loading={loading}
           initialFilter={initialFilter}
-          onBack={() => { setInitialFilter('tous'); setView('dashboard'); }}
+          initialActorSearch={actorSearch}     // 🆕 prop passée à Films
+          onBack={() => { setInitialFilter('tous'); setActorSearch(''); setView('dashboard'); }}
           onToggle={handleToggle}
           onGoToSearch={() => setView('search')}
           currentTheme={currentTheme}
@@ -107,6 +99,7 @@ export default function UserInterface({ currentTheme, user, onLogout, onIconicUn
           loading={loading}
           onGoToSearch={() => setView('search')}
           onGoToFilms={goToFilms}
+          onGoToFilmsByActor={goToFilmsByActor}   // 🆕 prop pour le click acteur Gold
           onToggle={handleToggle}
           currentTheme={currentTheme}
           user={user}

@@ -7,107 +7,179 @@ import {
   Users, Wand2, Landmark, Skull, Music, Search, 
    Tv, Eye, Crosshair, Tent,  Award, ThumbsUp, ThumbsDown, Meh, Zap, Crown
 } from 'lucide-react';
+import { rateActor, fetchMyActorRatings } from '../utils/filmsApi';
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 export const SECTION_CONFIG = {
   chefdoeuvre: {
-    label: 'Chef-d\'œuvre',
-    short: 'C.D\'Œ',
+    label: 'Chef-d\'œuvre', short: 'C.D\'Œ',
     cls:   'border-yellow-400/70 text-yellow-300 bg-yellow-500/15',
-    icon:  Crown,
-    desc:  'Parfait. À voir absolument.',
-    color: '#EAB308',
+    icon:  Crown, desc: 'Parfait. À voir absolument.', color: '#EAB308',
   },
   elite: {
-    label: 'Élite',
-    short: 'ÉLITE',
+    label: 'Élite', short: 'ÉLITE',
     cls:   'border-purple-500/60 text-purple-300 bg-purple-600/15',
-    icon:  Award,
-    desc:  'Excellent. Marqué à vie.',
-    color: '#A855F7',
+    icon:  Award, desc: 'Excellent. Marqué à vie.', color: '#A855F7',
   },
   bien: {
-    label: 'Bien',
-    short: 'BIEN',
+    label: 'Bien', short: 'BIEN',
     cls:   'border-emerald-500/60 text-emerald-300 bg-emerald-600/15',
-    icon:  ThumbsUp,
-    desc:  'Bon film. Content de l\'avoir vu.',
-    color: '#10B981',
+    icon:  ThumbsUp, desc: 'Bon film. Content de l\'avoir vu.', color: '#10B981',
   },
   moyen: {
-    label: 'Moyen',
-    short: 'MOYEN',
+    label: 'Moyen', short: 'MOYEN',
     cls:   'border-amber-400/60 text-amber-300 bg-amber-500/15',
-    icon:  Meh,
-    desc:  'Correct. Pas de regrets, pas d\'ovation.',
-    color: '#F59E0B',
+    icon:  Meh, desc: 'Correct. Pas de regrets, pas d\'ovation.', color: '#F59E0B',
   },
   decu: {
-    label: 'Déçu',
-    short: 'DÉÇU',
+    label: 'Déçu', short: 'DÉÇU',
     cls:   'border-orange-500/60 text-orange-300 bg-orange-600/15',
-    icon:  ThumbsDown,
-    desc:  'En dessous des espérances.',
-    color: '#F97316',
+    icon:  ThumbsDown, desc: 'En dessous des espérances.', color: '#F97316',
   },
   navet: {
-    label: 'Navet',
-    short: 'NAVET',
+    label: 'Navet', short: 'NAVET',
     cls:   'border-rose-500/60 text-rose-300 bg-rose-600/15',
-    icon:  Zap,
-    desc:  'Tu t\'es sacrifié. Noté pour ne plus recommencer.',
-    color: '#F43F5E',
+    icon:  Zap, desc: 'Tu t\'es sacrifié. Noté pour ne plus recommencer.', color: '#F43F5E',
   },
 };
 
 const CATEGORY_STYLES = {
-  Action:        { icon: Swords,    style: 'bg-transparent text-red-400 border-red-500/40' },
-  Aventure:      { icon: Compass,   style: 'bg-transparent text-amber-400 border-amber-500/40' },
-  Animation:     { icon: Sparkles,  style: 'bg-transparent text-violet-400 border-violet-500/40' },
-  Comédie:       { icon: Smile,     style: 'bg-transparent text-yellow-400 border-yellow-500/40' },
-  Crime:         { icon: Siren,     style: 'bg-transparent text-rose-400 border-rose-500/40' },
-  Documentaire:  { icon: Camera,    style: 'bg-transparent text-teal-400 border-teal-500/40' },
-  Drame:         { icon: Film,      style: 'bg-transparent text-slate-300 border-slate-500/50' },
-  Familial:      { icon: Users,     style: 'bg-transparent text-sky-400 border-sky-500/40' },
-  Fantastique:   { icon: Wand2,     style: 'bg-transparent text-fuchsia-400 border-fuchsia-500/40' },
-  Histoire:      { icon: Landmark,  style: 'bg-transparent text-orange-300 border-orange-500/40' },
-  Horreur:       { icon: Skull,     style: 'bg-transparent text-zinc-300 border-zinc-500/40' },
-  Musique:       { icon: Music,     style: 'bg-transparent text-pink-400 border-pink-500/40' },
-  Mystère:       { icon: Search,    style: 'bg-transparent text-indigo-400 border-indigo-500/40' },
-  Romance:       { icon: Heart,     style: 'bg-transparent text-pink-300 border-pink-500/40' },
-  'Sci-Fi':      { icon: Rocket,    style: 'bg-transparent text-emerald-400 border-emerald-500/40' },
-  Téléfilm:      { icon: Tv,        style: 'bg-transparent text-blue-400 border-blue-500/40' },
-  Thriller:      { icon: Eye,       style: 'bg-transparent text-red-500 border-red-600/40' },
-  Guerre:        { icon: Crosshair, style: 'bg-transparent text-stone-400 border-stone-500/40' },
-  Western:       { icon: Tent,      style: 'bg-transparent text-orange-400 border-orange-500/40' },
-  default:       { icon: Tag,       style: 'bg-transparent text-slate-300 border-white/20' },
+  Action:       { icon: Swords,    style: 'bg-transparent text-red-400 border-red-500/40' },
+  Aventure:     { icon: Compass,   style: 'bg-transparent text-amber-400 border-amber-500/40' },
+  Animation:    { icon: Sparkles,  style: 'bg-transparent text-violet-400 border-violet-500/40' },
+  Comédie:      { icon: Smile,     style: 'bg-transparent text-yellow-400 border-yellow-500/40' },
+  Crime:        { icon: Siren,     style: 'bg-transparent text-rose-400 border-rose-500/40' },
+  Documentaire: { icon: Camera,    style: 'bg-transparent text-teal-400 border-teal-500/40' },
+  Drame:        { icon: Film,      style: 'bg-transparent text-slate-300 border-slate-500/50' },
+  Familial:     { icon: Users,     style: 'bg-transparent text-sky-400 border-sky-500/40' },
+  Fantastique:  { icon: Wand2,     style: 'bg-transparent text-fuchsia-400 border-fuchsia-500/40' },
+  Histoire:     { icon: Landmark,  style: 'bg-transparent text-orange-300 border-orange-500/40' },
+  Horreur:      { icon: Skull,     style: 'bg-transparent text-zinc-300 border-zinc-500/40' },
+  Musique:      { icon: Music,     style: 'bg-transparent text-pink-400 border-pink-500/40' },
+  Mystère:      { icon: Search,    style: 'bg-transparent text-indigo-400 border-indigo-500/40' },
+  Romance:      { icon: Heart,     style: 'bg-transparent text-pink-300 border-pink-500/40' },
+  'Sci-Fi':     { icon: Rocket,    style: 'bg-transparent text-emerald-400 border-emerald-500/40' },
+  Téléfilm:     { icon: Tv,        style: 'bg-transparent text-blue-400 border-blue-500/40' },
+  Thriller:     { icon: Eye,       style: 'bg-transparent text-red-500 border-red-600/40' },
+  Guerre:       { icon: Crosshair, style: 'bg-transparent text-stone-400 border-stone-500/40' },
+  Western:      { icon: Tent,      style: 'bg-transparent text-orange-400 border-orange-500/40' },
+  default:      { icon: Tag,       style: 'bg-transparent text-slate-300 border-white/20' },
 };
 
-// Surcharges de styles de catégorie pour le thème clair
 const CATEGORY_STYLES_LIGHT = {
-  Action:        { icon: Swords,    style: 'bg-transparent text-red-600 border-red-400/50' },
-  Aventure:      { icon: Compass,   style: 'bg-transparent text-amber-600 border-amber-400/50' },
-  Animation:     { icon: Sparkles,  style: 'bg-transparent text-violet-600 border-violet-400/50' },
-  Comédie:       { icon: Smile,     style: 'bg-transparent text-yellow-600 border-yellow-400/50' },
-  Crime:         { icon: Siren,     style: 'bg-transparent text-rose-600 border-rose-400/50' },
-  Documentaire:  { icon: Camera,    style: 'bg-transparent text-teal-600 border-teal-400/50' },
-  Drame:         { icon: Film,      style: 'bg-transparent text-stone-600 border-stone-400/50' },
-  Familial:      { icon: Users,     style: 'bg-transparent text-sky-600 border-sky-400/50' },
-  Fantastique:   { icon: Wand2,     style: 'bg-transparent text-fuchsia-600 border-fuchsia-400/50' },
-  Histoire:      { icon: Landmark,  style: 'bg-transparent text-orange-600 border-orange-400/50' },
-  Horreur:       { icon: Skull,     style: 'bg-transparent text-zinc-700 border-zinc-500/50' },
-  Musique:       { icon: Music,     style: 'bg-transparent text-pink-600 border-pink-400/50' },
-  Mystère:       { icon: Search,    style: 'bg-transparent text-indigo-600 border-indigo-400/50' },
-  Romance:       { icon: Heart,     style: 'bg-transparent text-pink-600 border-pink-400/50' },
-  'Sci-Fi':      { icon: Rocket,    style: 'bg-transparent text-emerald-700 border-emerald-500/40' },
-  Téléfilm:      { icon: Tv,        style: 'bg-transparent text-blue-600 border-blue-400/50' },
-  Thriller:      { icon: Eye,       style: 'bg-transparent text-red-700 border-red-500/50' },
-  Guerre:        { icon: Crosshair, style: 'bg-transparent text-stone-700 border-stone-500/50' },
-  Western:       { icon: Tent,      style: 'bg-transparent text-orange-700 border-orange-500/50' },
-  default:       { icon: Tag,       style: 'bg-transparent text-stone-500 border-stone-400/30' },
+  Action:       { icon: Swords,    style: 'bg-transparent text-red-600 border-red-400/50' },
+  Aventure:     { icon: Compass,   style: 'bg-transparent text-amber-600 border-amber-400/50' },
+  Animation:    { icon: Sparkles,  style: 'bg-transparent text-violet-600 border-violet-400/50' },
+  Comédie:      { icon: Smile,     style: 'bg-transparent text-yellow-600 border-yellow-400/50' },
+  Crime:        { icon: Siren,     style: 'bg-transparent text-rose-600 border-rose-400/50' },
+  Documentaire: { icon: Camera,    style: 'bg-transparent text-teal-600 border-teal-400/50' },
+  Drame:        { icon: Film,      style: 'bg-transparent text-stone-600 border-stone-400/50' },
+  Familial:     { icon: Users,     style: 'bg-transparent text-sky-600 border-sky-400/50' },
+  Fantastique:  { icon: Wand2,     style: 'bg-transparent text-fuchsia-600 border-fuchsia-400/50' },
+  Histoire:     { icon: Landmark,  style: 'bg-transparent text-orange-600 border-orange-400/50' },
+  Horreur:      { icon: Skull,     style: 'bg-transparent text-zinc-700 border-zinc-500/50' },
+  Musique:      { icon: Music,     style: 'bg-transparent text-pink-600 border-pink-400/50' },
+  Mystère:      { icon: Search,    style: 'bg-transparent text-indigo-600 border-indigo-400/50' },
+  Romance:      { icon: Heart,     style: 'bg-transparent text-pink-600 border-pink-400/50' },
+  'Sci-Fi':     { icon: Rocket,    style: 'bg-transparent text-emerald-700 border-emerald-500/40' },
+  Téléfilm:     { icon: Tv,        style: 'bg-transparent text-blue-600 border-blue-400/50' },
+  Thriller:     { icon: Eye,       style: 'bg-transparent text-red-700 border-red-500/50' },
+  Guerre:       { icon: Crosshair, style: 'bg-transparent text-stone-700 border-stone-500/50' },
+  Western:      { icon: Tent,      style: 'bg-transparent text-orange-700 border-orange-500/50' },
+  default:      { icon: Tag,       style: 'bg-transparent text-stone-500 border-stone-400/30' },
 };
 
+// ─── HEARTS RATING CONFIG ─────────────────────────────────────────────────────
+// 4 niveaux de cœurs avec couleurs et labels
+const HEART_LEVELS = [
+  { value: 1, color: '#94a3b8', label: 'Intéressant',  labelShort: 'Intéressant' },   // slate (neutre)
+  { value: 2, color: '#f472b6', label: 'Bien',          labelShort: 'Bien' },           // rose
+  { value: 3, color: '#ef4444', label: 'Très bien',     labelShort: 'Très bien' },      // red
+  { value: 4, color: '#C9960C', label: 'Gold ✦',        labelShort: 'Gold' },           // gold
+];
 
+// ─── COMPOSANT ACTOR HEART RATING ─────────────────────────────────────────────
+function ActorHeartRating({ actor, currentRating, onRate, isLight }) {
+  const [hovered,  setHovered]  = useState(0);   // valeur survolée (0 = aucune)
+  const [saving,   setSaving]   = useState(false);
+  const [showLabel, setShowLabel] = useState(false);
+
+  const activeLevel = hovered || currentRating || 0;
+  const levelInfo   = HEART_LEVELS.find(l => l.value === activeLevel);
+
+  const handleClick = async (value) => {
+    if (saving) return;
+    // Si on clique sur le même niveau → désactivation (rating 0)
+    const newValue = value === currentRating ? 0 : value;
+    setSaving(true);
+    try {
+      await onRate(actor, newValue);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      {/* Label niveau — apparaît au hover */}
+      <div
+        className="h-4 transition-all duration-200 overflow-hidden"
+        style={{ opacity: showLabel && activeLevel > 0 ? 1 : 0 }}
+      >
+        {levelInfo && (
+          <span
+            className="text-[8px] font-black uppercase tracking-widest whitespace-nowrap"
+            style={{ color: levelInfo.color }}
+          >
+            {levelInfo.labelShort}
+          </span>
+        )}
+      </div>
+
+      {/* Les 4 cœurs */}
+      <div
+        className="flex items-center gap-1"
+        onMouseEnter={() => setShowLabel(true)}
+        onMouseLeave={() => { setShowLabel(false); setHovered(0); }}
+      >
+        {HEART_LEVELS.map(({ value, color }) => {
+          const isFilled = value <= activeLevel;
+          const isGold   = value === 4;
+
+          return (
+            <button
+              key={value}
+              onClick={() => handleClick(value)}
+              onMouseEnter={() => setHovered(value)}
+              onMouseLeave={() => setHovered(0)}
+              disabled={saving}
+              className="transition-all duration-150 hover:scale-125 active:scale-95 disabled:opacity-50"
+              style={{
+                transform: hovered === value ? 'scale(1.3)' : 'scale(1)',
+                filter: isGold && isFilled
+                  ? 'drop-shadow(0 0 4px rgba(201,150,12,0.7))'
+                  : isFilled
+                    ? `drop-shadow(0 0 3px ${color}60)`
+                    : 'none',
+              }}
+            >
+              <Heart
+                size={14}
+                fill={isFilled ? color : 'none'}
+                style={{
+                  color: isFilled ? color : (isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)'),
+                  transition: 'all 0.15s ease',
+                }}
+              />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Stars ────────────────────────────────────────────────────────────────────
 const Stars = ({ rating, size = 14 }) => (
   <div className="flex items-center gap-0.5">
     {[...Array(5)].map((_, i) => (
@@ -148,11 +220,9 @@ function JournalModal({ existing, onSave, onClose, isLight }) {
         >
           <X size={14} />
         </button>
-
         <h3 className="text-lg font-black tracking-tighter uppercase mb-4" style={{ color: 'var(--text-primary)' }}>
           {existing ? "Modifier l'avis" : 'Ajouter un avis'}
         </h3>
-
         <div className="mb-3">
           <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color: 'var(--text-muted)' }}>
             Date de visionnage
@@ -161,16 +231,11 @@ function JournalModal({ existing, onSave, onClose, isLight }) {
             type="date" value={date}
             onChange={e => setDate(e.target.value)}
             className="w-full rounded-lg px-3 py-2 text-sm font-medium focus:outline-none transition-colors"
-            style={{
-              backgroundColor: 'var(--bg-color)',
-              border: `1px solid var(--border-subtle)`,
-              color: 'var(--text-primary)',
-            }}
+            style={{ backgroundColor: 'var(--bg-color)', border: `1px solid var(--border-subtle)`, color: 'var(--text-primary)' }}
             onFocus={e => e.target.style.borderColor = 'var(--accent-color)'}
             onBlur={e => e.target.style.borderColor = 'var(--border-subtle)'}
           />
         </div>
-
         <div className="mb-5">
           <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color: 'var(--text-muted)' }}>
             Mon avis
@@ -179,16 +244,11 @@ function JournalModal({ existing, onSave, onClose, isLight }) {
             value={text} onChange={e => setText(e.target.value)} rows={5}
             placeholder="Ce film m'a..."
             className="w-full rounded-lg px-3 py-2 text-sm font-medium focus:outline-none resize-none transition-colors"
-            style={{
-              backgroundColor: 'var(--bg-color)',
-              border: `1px solid var(--border-subtle)`,
-              color: 'var(--text-primary)',
-            }}
+            style={{ backgroundColor: 'var(--bg-color)', border: `1px solid var(--border-subtle)`, color: 'var(--text-primary)' }}
             onFocus={e => e.target.style.borderColor = 'var(--accent-color)'}
             onBlur={e => e.target.style.borderColor = 'var(--border-subtle)'}
           />
         </div>
-
         <div className="flex gap-3 justify-end">
           <button
             onClick={onClose}
@@ -222,13 +282,17 @@ export default function CardComplet({
   onClose,
   currentTheme,
 }) {
-  const sec      = SECTION_CONFIG[section] || SECTION_CONFIG.moyen;
-  const isLight  = currentTheme?.isLight || false;
+  const sec       = SECTION_CONFIG[section] || SECTION_CONFIG.moyen;
+  const isLight   = currentTheme?.isLight || false;
   const catStyles = isLight ? CATEGORY_STYLES_LIGHT : CATEGORY_STYLES;
 
-  const [avis,         setAvis]         = useState(() => comment ? [{ text: comment, date: year + '-01-01' }] : []);
-  const [avisIndex,    setAvisIndex]    = useState(0);
-  const [journalModal, setJournalModal] = useState(null);
+  const [avis,          setAvis]         = useState(() => comment ? [{ text: comment, date: year + '-01-01' }] : []);
+  const [avisIndex,     setAvisIndex]    = useState(0);
+  const [journalModal,  setJournalModal] = useState(null);
+
+  // Ratings acteurs : { [actorName]: hearts (1-4) }
+  const [actorRatings,  setActorRatings] = useState({});
+  const [ratingsLoaded, setRatingsLoaded] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -240,6 +304,19 @@ export default function CardComplet({
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
+
+  // Charge les ratings existants de l'user pour les acteurs du film
+  useEffect(() => {
+    if (actors.length === 0) { setRatingsLoaded(true); return; }
+    fetchMyActorRatings()
+      .then(ratings => {
+        const map = {};
+        ratings.forEach(r => { map[r.actorName] = r.hearts; });
+        setActorRatings(map);
+      })
+      .catch(() => {})
+      .finally(() => setRatingsLoaded(true));
+  }, [actors.length]);
 
   const handleSaveAvis = ({ text, date }) => {
     if (journalModal === 'add') {
@@ -254,7 +331,103 @@ export default function CardComplet({
     setJournalModal(null);
   };
 
+  // Rate un acteur et met à jour l'état local
+  const handleRateActor = async (actor, hearts) => {
+    // Optimiste : met à jour immédiatement
+    setActorRatings(prev => {
+      const next = { ...prev };
+      if (hearts === 0) delete next[actor.name];
+      else next[actor.name] = hearts;
+      return next;
+    });
+    try {
+      // img sans le domaine TMDB (on stocke juste le path)
+      const profilePath = actor.img?.replace('https://image.tmdb.org/t/p/w200', '') || '';
+      await rateActor({ actorName: actor.name, actorImg: profilePath, hearts });
+    } catch {
+      // Rollback silencieux si erreur
+      setActorRatings(prev => {
+        const next = { ...prev };
+        // On recharge au prochain render
+        return next;
+      });
+    }
+  };
+
   const currentAvis = avis[avisIndex];
+
+  // ── Rendu acteur partagé (desktop + mobile) ───────────────────────────────
+  const renderActor = (actor, i, compact = false) => {
+    const hearts = actorRatings[actor.name] || 0;
+    const isGold = hearts === 4;
+
+    return (
+      <div key={i} className={`flex items-center gap-3 group/actor ${compact ? '' : ''}`}>
+        {/* Avatar */}
+        <div className="relative shrink-0">
+          <div
+            className={`${compact ? 'w-9 h-9' : 'w-11 h-11'} rounded-full overflow-hidden border transition-all duration-300`}
+            style={{
+              borderColor: isGold
+                ? '#C9960C'
+                : hearts > 0
+                  ? HEART_LEVELS[hearts - 1].color
+                  : 'var(--border-subtle)',
+              boxShadow: isGold ? '0 0 8px rgba(201,150,12,0.5)' : 'none',
+            }}
+          >
+            {actor.img ? (
+              <img
+                src={actor.img}
+                alt={actor.name}
+                className={`w-full h-full object-cover ${compact ? 'grayscale' : 'grayscale group-hover/actor:grayscale-0'} transition-all duration-500`}
+              />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center text-sm font-black"
+                style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}
+              >
+                {actor.name.charAt(0)}
+              </div>
+            )}
+          </div>
+          {/* Indicateur Gold */}
+          {isGold && (
+            <div
+              className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center border"
+              style={{ backgroundColor: '#C9960C', borderColor: 'var(--bg-color)' }}
+            >
+              <Heart size={7} fill="white" style={{ color: 'white' }} />
+            </div>
+          )}
+        </div>
+
+        {/* Infos + Rating */}
+        <div className="min-w-0 flex-1">
+          <div
+            className="font-bold text-xs leading-tight truncate transition-colors duration-300"
+            style={{ color: isGold ? '#C9960C' : 'var(--text-primary)' }}
+          >
+            {actor.name}
+          </div>
+          <div className="text-[10px] font-black uppercase tracking-wide truncate" style={{ color: 'var(--accent-color)' }}>
+            {actor.role}
+          </div>
+          {/* Hearts rating */}
+          {ratingsLoaded && (
+            <div className="mt-1.5">
+              <ActorHeartRating
+                actor={actor}
+                currentRating={hearts}
+                onRate={handleRateActor}
+                isLight={isLight}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -277,7 +450,6 @@ export default function CardComplet({
 
           {/* Contenu droite */}
           <div className="flex-1 h-full flex flex-col px-10 py-8 overflow-y-auto relative">
-
             <button
               onClick={onClose}
               className="absolute top-6 right-6 z-10 w-9 h-9 flex items-center justify-center border rounded-full transition-all duration-200 hover:rotate-90"
@@ -344,7 +516,6 @@ export default function CardComplet({
                   <Plus size={10} /> Ajouter un avis
                 </button>
               </div>
-
               {avis.length === 0 ? (
                 <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>Aucun avis pour l'instant.</p>
               ) : (
@@ -366,7 +537,6 @@ export default function CardComplet({
                   <p className="text-sm leading-relaxed italic max-w-2xl" style={{ color: 'var(--text-primary)' }}>
                     "{currentAvis.text}"
                   </p>
-
                   {avis.length > 1 && (
                     <div className="flex items-center gap-2 mt-4">
                       <button
@@ -382,10 +552,7 @@ export default function CardComplet({
                       {avis.map((_, i) => (
                         <button key={i} onClick={() => setAvisIndex(i)}
                           className="w-1.5 h-1.5 rounded-full transition-all duration-200"
-                          style={{
-                            backgroundColor: i === avisIndex ? 'var(--accent-color)' : 'var(--border-medium)',
-                            transform: i === avisIndex ? 'scale(1.3)' : 'scale(1)',
-                          }} />
+                          style={{ backgroundColor: i === avisIndex ? 'var(--accent-color)' : 'var(--border-medium)', transform: i === avisIndex ? 'scale(1.3)' : 'scale(1)' }} />
                       ))}
                       <button
                         onClick={() => setAvisIndex(i => Math.min(avis.length - 1, i + 1))}
@@ -405,29 +572,17 @@ export default function CardComplet({
 
             <div className="h-px w-full mb-5" style={{ backgroundColor: 'var(--border-subtle)' }} />
 
-            {/* Casting */}
+            {/* ── Casting desktop avec rating ── */}
             <div className="shrink-0 pb-2">
               <div className="flex items-center gap-2 mb-4">
                 <Users size={11} style={{ color: 'var(--text-muted)' }} />
                 <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Têtes d'affiche</span>
+                <span className="text-[8px] font-medium ml-1 italic" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>
+                  · Rate tes acteurs favoris
+                </span>
               </div>
-              <div className="flex gap-5 flex-wrap">
-                {actors.map((actor, i) => (
-                  <div key={i} className="flex items-center gap-3 group/actor">
-                    <div
-                      className="w-11 h-11 rounded-full overflow-hidden border transition-colors duration-300 shrink-0"
-                      style={{ borderColor: 'var(--border-subtle)' }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
-                    >
-                      <img src={actor.img} alt={actor.name} className="w-full h-full object-cover grayscale group-hover/actor:grayscale-0 transition-all duration-500" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-bold text-xs leading-tight truncate" style={{ color: 'var(--text-primary)' }}>{actor.name}</div>
-                      <div className="text-[10px] font-black uppercase tracking-wide truncate" style={{ color: 'var(--accent-color)' }}>{actor.role}</div>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex gap-6 flex-wrap">
+                {actors.map((actor, i) => renderActor(actor, i, false))}
               </div>
             </div>
           </div>
@@ -455,7 +610,6 @@ export default function CardComplet({
                 <X size={14} />
               </button>
             </div>
-
             <div className="pt-2 pb-4 px-4 pl-28">
               <div className="flex items-center gap-1.5 mb-1">
                 <Calendar size={10} style={{ color: 'var(--accent-color)' }} />
@@ -525,12 +679,9 @@ export default function CardComplet({
                   <p className="text-xs leading-relaxed italic" style={{ color: 'var(--text-primary)' }}>"{currentAvis.text}"</p>
                   {avis.length > 1 && (
                     <div className="flex items-center gap-2 mt-3">
-                      <button
-                        onClick={() => setAvisIndex(i => Math.max(0, i - 1))}
-                        disabled={avisIndex === 0}
+                      <button onClick={() => setAvisIndex(i => Math.max(0, i - 1))} disabled={avisIndex === 0}
                         className="w-5 h-5 flex items-center justify-center border rounded disabled:opacity-20"
-                        style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}
-                      >
+                        style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
                         <ChevronLeft size={10} />
                       </button>
                       {avis.map((_, i) => (
@@ -538,12 +689,9 @@ export default function CardComplet({
                           className="w-1.5 h-1.5 rounded-full transition-all"
                           style={{ backgroundColor: i === avisIndex ? 'var(--accent-color)' : 'var(--border-medium)', transform: i === avisIndex ? 'scale(1.3)' : 'scale(1)' }} />
                       ))}
-                      <button
-                        onClick={() => setAvisIndex(i => Math.min(avis.length - 1, i + 1))}
-                        disabled={avisIndex === avis.length - 1}
+                      <button onClick={() => setAvisIndex(i => Math.min(avis.length - 1, i + 1))} disabled={avisIndex === avis.length - 1}
                         className="w-5 h-5 flex items-center justify-center border rounded disabled:opacity-20"
-                        style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}
-                      >
+                        style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
                         <ChevronRight size={10} />
                       </button>
                     </div>
@@ -554,23 +702,16 @@ export default function CardComplet({
 
             <div className="h-px w-full mb-4" style={{ backgroundColor: 'var(--border-subtle)' }} />
 
-            {/* Casting mobile */}
+            {/* Casting mobile avec rating */}
             <div>
-              <span className="text-[9px] font-black uppercase tracking-widest block mb-3" style={{ color: 'var(--text-muted)' }}>
-                Têtes d'affiche
-              </span>
-              <div className="flex gap-4 flex-wrap">
-                {actors.slice(0, 3).map((actor, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-full overflow-hidden border shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
-                      <img src={actor.img} alt={actor.name} className="w-full h-full object-cover grayscale" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-[10px] leading-tight" style={{ color: 'var(--text-primary)' }}>{actor.name}</div>
-                      <div className="text-[9px] font-black uppercase tracking-wide" style={{ color: 'var(--accent-color)' }}>{actor.role}</div>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center gap-1.5 mb-3">
+                <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                  Têtes d'affiche
+                </span>
+                <span className="text-[8px] italic" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>· Rate tes acteurs</span>
+              </div>
+              <div className="flex flex-col gap-4">
+                {actors.slice(0, 4).map((actor, i) => renderActor(actor, i, true))}
               </div>
             </div>
           </div>
