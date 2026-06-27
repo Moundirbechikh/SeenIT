@@ -67,6 +67,19 @@ export default function App() {
   const [user,         setUser]         = useState(null);
   // null = vérification en cours | false = non connecté | object = connecté
   const [authChecked,  setAuthChecked]  = useState(false);
+  
+  // Nouvel état pour gérer l'index de la couleur du point de chargement
+  const [dotColorIndex, setDotColorIndex] = useState(0);
+
+  // ── Animation du point pendant le chargement ───────────────────────────────
+  useEffect(() => {
+    if (authChecked) return; // Arrête l'intervalle si l'auth est vérifiée
+    const interval = setInterval(() => {
+      setDotColorIndex((prev) => (prev + 1) % THEMES.length);
+    }, 250); // Change de couleur toutes les 250ms (instantané/rapide)
+
+    return () => clearInterval(interval);
+  }, [authChecked]);
 
   // ── Vérification session au démarrage ──────────────────────────────────────
   useEffect(() => {
@@ -118,15 +131,21 @@ export default function App() {
   // ── Splash pendant la vérification (évite le flash) ───────────────────────
   if (!authChecked) {
     return (
-<div style={{
+      <div style={{
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backgroundColor: 'var(--bg-color)', transition: 'background-color 0.7s'
+        backgroundColor: currentTheme.bg, transition: 'background-color 0.7s'
       }}>
-        <div style={{ fontSize: 13, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-          <span className="transition-colors duration-700 font-black" style={{ color: 'var(--text-primary)' }}>
+        {/* Style "comme le logo", en blanc, avec le point dynamique */}
+        <div className="text-3xl font-black tracking-tighter flex items-center gap-1 select-none">
+          <span style={{ color: '#FFFFFF' }}>
             SeenIt
           </span>
-          <span className="transition-colors duration-700 font-black" style={{ color: 'var(--accent-color)' }}>.</span>
+          <span 
+            className="transition-colors duration-200" 
+            style={{ color: THEMES[dotColorIndex].accent }}
+          >
+            .
+          </span>
         </div>
       </div>
     );
