@@ -582,17 +582,11 @@ export default function Suggestion({ onBack, currentTheme, user }) {
         <div className={`mb-10 transform transition-all duration-1000 ease-out ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-6 h-1 rounded-full" style={{ backgroundColor: 'var(--accent-color)' }} />
-                <span className="text-[10px] font-black uppercase tracking-[0.25em]" style={{ color: 'var(--accent-color)' }}>
-                  Découvertes & Partages
-                </span>
-              </div>
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter uppercase leading-[0.9] mb-4"
                 style={{ color: 'var(--text-primary)' }}>
                 SUGGESTIONS
                 <br />
-                <span className="inline-block py-1 px-3 shadow-2xl mt-1 rounded-sm" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
+                <span className="inline-block py-2  shadow-2xl mt-1" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
                   DE LA SEMAINE
                 </span>
               </h1>
