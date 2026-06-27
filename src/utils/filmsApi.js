@@ -1,9 +1,10 @@
 import { getToken } from './auth';
 
-const API         = 'https://seenit-backend-n8ve.onrender.com/api/films';
-const ACTORS_API  = 'https://seenit-backend-n8ve.onrender.com/api/actors';
-const TMDB_IMG    = 'https://image.tmdb.org/t/p/w500';
-const TMDB_IMG_SM = 'https://image.tmdb.org/t/p/w200';
+const API              = 'https://seenit-backend-n8ve.onrender.com/api/films';
+const ACTORS_API       = 'https://seenit-backend-n8ve.onrender.com/api/actors';
+const SUGGESTIONS_API  = 'https://seenit-backend-n8ve.onrender.com/api/suggestions';
+const TMDB_IMG         = 'https://image.tmdb.org/t/p/w500';
+const TMDB_IMG_SM      = 'https://image.tmdb.org/t/p/w200';
 
 const headers = () => ({
   'Content-Type': 'application/json',
@@ -102,7 +103,6 @@ export const searchFilms = async (query) => {
 
 // ── Acteurs ──────────────────────────────────────────────────────────────────
 
-// Rate un acteur (hearts: 1-4) ou supprime le rating (hearts: 0)
 export const rateActor = async ({ actorName, actorImg, hearts }) => {
   const res  = await fetch(`${ACTORS_API}/rate`, {
     method:  'PUT',
@@ -114,7 +114,6 @@ export const rateActor = async ({ actorName, actorImg, hearts }) => {
   return data;
 };
 
-// Récupère tous les ratings d'acteurs de l'utilisateur
 export const fetchMyActorRatings = async () => {
   const res  = await fetch(`${ACTORS_API}/my`, { headers: headers() });
   const data = await res.json();
@@ -122,10 +121,50 @@ export const fetchMyActorRatings = async () => {
   return data.ratings || [];
 };
 
-// Récupère uniquement les acteurs Gold (hearts === 4) — pour le Dashboard
 export const fetchGoldActors = async () => {
   const res  = await fetch(`${ACTORS_API}/gold`, { headers: headers() });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message);
   return data.actors || [];
+};
+
+// ── Suggestions ──────────────────────────────────────────────────────────────
+
+// Toutes les suggestions de la semaine (tous les users)
+export const fetchWeeklySuggestions = async () => {
+  const res  = await fetch(`${SUGGESTIONS_API}/week`, { headers: headers() });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+
+// Ma sélection de la semaine + droits d'ajout
+export const fetchMySuggestion = async () => {
+  const res  = await fetch(`${SUGGESTIONS_API}/my`, { headers: headers() });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+
+// Ajouter un film à ma sélection hebdo
+export const addToSuggestion = async (userFilmId) => {
+  const res  = await fetch(`${SUGGESTIONS_API}/add`, {
+    method:  'POST',
+    headers: headers(),
+    body:    JSON.stringify({ userFilmId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
+
+// Retirer un film de ma sélection hebdo
+export const removeFromSuggestion = async (tmdbId) => {
+  const res  = await fetch(`${SUGGESTIONS_API}/remove/${tmdbId}`, {
+    method:  'DELETE',
+    headers: headers(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
 };

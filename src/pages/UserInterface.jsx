@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Dashboard from '../components/Dashbord';
-import SearchAdd from '../components/Searchadd';
-import Films     from './Films';
+import Dashboard  from '../components/Dashbord';
+import SearchAdd  from '../components/Searchadd';
+import Films      from './Films';
+import Suggestion from './Suggestion';   // ← NOUVEAU
 import { fetchMyFilms, fetchStats, toggleFlag } from '../utils/filmsApi';
 
 export default function UserInterface({ currentTheme, user, onLogout, onIconicUnlock }) {
@@ -10,9 +11,6 @@ export default function UserInterface({ currentTheme, user, onLogout, onIconicUn
   const [stats,         setStats]         = useState(null);
   const [loading,       setLoading]       = useState(true);
   const [initialFilter, setInitialFilter] = useState('tous');
-
-  // 🆕 Filtre acteur : quand on clique sur un acteur Gold dans le dashboard
-  // → Films s'ouvre avec ce nom pré-rempli dans la recherche
   const [actorSearch,   setActorSearch]   = useState('');
 
   const loadData = useCallback(async () => {
@@ -56,16 +54,25 @@ export default function UserInterface({ currentTheme, user, onLogout, onIconicUn
 
   const goToFilms = (filter = 'tous') => {
     setInitialFilter(filter);
-    setActorSearch('');   // reset acteur
+    setActorSearch('');
     setView('films');
   };
 
-  // 🆕 Aller vers Films filtré par acteur (depuis le dashboard)
   const goToFilmsByActor = (actorName) => {
     setInitialFilter('tous');
     setActorSearch(actorName);
     setView('films');
   };
+
+  // ── Navigation vers Suggestions (appelée depuis Dashboard et NavFirst) ──
+  const goToSuggestions = () => setView('suggestions');
+
+  // Expose goToSuggestions via événement (pour NavFirst)
+  useEffect(() => {
+    const handler = () => setView('suggestions');
+    window.addEventListener('seenit:go-suggestions', handler);
+    return () => window.removeEventListener('seenit:go-suggestions', handler);
+  }, []);
 
   switch (view) {
     case 'search':
@@ -83,11 +90,20 @@ export default function UserInterface({ currentTheme, user, onLogout, onIconicUn
           films={films}
           loading={loading}
           initialFilter={initialFilter}
-          initialActorSearch={actorSearch}     // 🆕 prop passée à Films
+          initialActorSearch={actorSearch}
           onBack={() => { setInitialFilter('tous'); setActorSearch(''); setView('dashboard'); }}
           onToggle={handleToggle}
           onGoToSearch={() => setView('search')}
           currentTheme={currentTheme}
+        />
+      );
+
+    case 'suggestions':
+      return (
+        <Suggestion
+          onBack={() => setView('dashboard')}
+          currentTheme={currentTheme}
+          user={user}
         />
       );
 
@@ -99,7 +115,8 @@ export default function UserInterface({ currentTheme, user, onLogout, onIconicUn
           loading={loading}
           onGoToSearch={() => setView('search')}
           onGoToFilms={goToFilms}
-          onGoToFilmsByActor={goToFilmsByActor}   // 🆕 prop pour le click acteur Gold
+          onGoToFilmsByActor={goToFilmsByActor}
+          onGoToSuggestions={goToSuggestions}   // ← NOUVEAU prop
           onToggle={handleToggle}
           currentTheme={currentTheme}
           user={user}

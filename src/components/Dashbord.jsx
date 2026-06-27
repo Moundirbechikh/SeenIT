@@ -3,7 +3,7 @@ import {
   Plus, Clapperboard, Film, Popcorn,
   Star, Heart, Trophy, Mic2,
   ArrowRight, Stamp, Camera, Hand, ChevronRight, Crown, Loader2,
-  Award, ThumbsUp, Meh, ThumbsDown, Zap, Sparkles
+  Award, ThumbsUp, Meh, ThumbsDown, Zap, Sparkles, Ticket
 } from 'lucide-react';
 import { fetchGoldActors } from '../utils/filmsApi';
 
@@ -46,13 +46,12 @@ function formatWatchedAt(dateStr) {
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────────────────────
 export default function Dashboard({
-  onGoToSearch, onGoToFilms, onGoToFilmsByActor,
+  onGoToSearch, onGoToFilms, onGoToFilmsByActor, onGoToSuggestions,
   currentTheme, user, stats, films = [], loading
 }) {
   const isLight = currentTheme?.isLight || false;
   const ts = useThemeStyles();
 
-  // ── Username formaté ───────────────────────────────────────────────────────
   const rawUserName  = user?.username || (user?.email ? user.email.split('@')[0] : null) || 'Cinéphile';
   let   userName     = rawUserName;
   const nameParts    = rawUserName.trim().split(/\s+/);
@@ -63,7 +62,6 @@ export default function Dashboard({
     }
   }
 
-  // ── Stats ──────────────────────────────────────────────────────────────────
   const totalFilms       = stats?.total            || 0;
   const chefdoeuvreCount = stats?.chefdoeuvreCount || 0;
   const eliteCount       = stats?.eliteCount       || 0;
@@ -92,7 +90,6 @@ export default function Dashboard({
     comment:   f.comment || '',
   }));
 
-  // ── Acteur récurrent (inchangé) ───────────────────────────────────────────
   const actorMap = {};
   films.filter(Boolean).forEach(film => {
     (film.actors || []).forEach(actor => {
@@ -105,7 +102,6 @@ export default function Dashboard({
   const favoriteActor      = favoriteActorEntry?.name || '—';
   const favoriteActorImg   = favoriteActorEntry?.img  || '';
 
-  // ── Acteurs Gold (hearts === 4) ───────────────────────────────────────────
   const [goldActors,    setGoldActors]    = useState([]);
   const [goldIndex,     setGoldIndex]     = useState(0);
   const [goldLoaded,    setGoldLoaded]    = useState(false);
@@ -116,7 +112,6 @@ export default function Dashboard({
       .catch(() => setGoldLoaded(true));
   }, []);
 
-  // Rotation automatique des acteurs Gold (toutes les 10s comme les coups de cœur)
   useEffect(() => {
     if (goldActors.length <= 1) return;
     const t = setInterval(() => setGoldIndex(p => (p + 1) % goldActors.length), 10000);
@@ -126,7 +121,6 @@ export default function Dashboard({
   const currentGoldActor = goldActors[goldIndex] || null;
   const hasGoldActors    = goldActors.length > 0;
 
-  // ── États locaux ───────────────────────────────────────────────────────────
   const [mounted,       setMounted]       = useState(false);
   const [activeCard,    setActiveCard]    = useState(null);
   const [heartIndex,    setHeartIndex]    = useState(0);
@@ -174,7 +168,6 @@ export default function Dashboard({
     </div>
   );
 
-  // ── Card acteur Gold (partagée desktop + mobile) ──────────────────────────
   const renderGoldActorCard = (compact = false) => {
     if (!hasGoldActors || !currentGoldActor) return null;
     const imgSrc = currentGoldActor.actorImg
@@ -208,7 +201,6 @@ export default function Dashboard({
           setProfileActive(null);
         }}
       >
-        {/* Fond shimmer Gold subtil */}
         <div
           className="absolute inset-0 transition-opacity duration-500 pointer-events-none"
           style={{
@@ -217,7 +209,6 @@ export default function Dashboard({
           }}
         />
 
-        {/* Indicateur de rotation */}
         {goldActors.length > 1 && (
           <div className="absolute top-3 right-3 flex gap-1 z-10">
             {goldActors.map((_, i) => (
@@ -233,7 +224,6 @@ export default function Dashboard({
         )}
 
         <div className="relative z-10 flex items-center gap-4 h-full">
-          {/* Avatar Gold */}
           <div className="relative shrink-0">
             <div
               className={`${compact ? 'w-16 h-16' : 'w-14 h-14'} rounded-full overflow-hidden border-2 transition-all duration-500`}
@@ -257,7 +247,6 @@ export default function Dashboard({
                 </div>
               )}
             </div>
-            {/* Badge Gold */}
             <div
               className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
               style={{ backgroundColor: '#C9960C', borderColor: 'var(--bg-color)' }}
@@ -266,7 +255,6 @@ export default function Dashboard({
             </div>
           </div>
 
-          {/* Infos */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 mb-1">
               <Sparkles size={9} style={{ color: '#C9960C' }} />
@@ -293,7 +281,6 @@ export default function Dashboard({
   return (
     <div className="flex-1 w-full relative min-h-screen" style={ts.bgMain}>
 
-      {/* Filigranes */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <Popcorn className="absolute top-[8%] right-[3%] rotate-12"
           style={{ color: 'var(--accent-color)', width: 200, height: 200, opacity: isLight ? 0.06 : 0.04 }} strokeWidth={1} />
@@ -343,7 +330,6 @@ export default function Dashboard({
                   </span>
                 </h2>
 
-                {/* Grid 2 colonnes, 3 si Gold actor présent */}
                 <div className={`grid gap-4 ${hasGoldActors ? 'grid-cols-3' : 'grid-cols-2'}`}>
 
                   {/* Card Genre */}
@@ -409,7 +395,6 @@ export default function Dashboard({
                     </div>
                   </div>
 
-                  {/* Card Acteur Gold — seulement si hasGoldActors */}
                   {hasGoldActors && renderGoldActorCard(false)}
                 </div>
               </div>
@@ -419,7 +404,6 @@ export default function Dashboard({
             <div className={`flex-1 relative h-[480px] flex justify-center items-center transform transition-all duration-1000 delay-300 ease-out ${mounted ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'}`}>
               {lastFilm ? (
                 <>
-                  {/* Ticket critique */}
                   <div
                     className={`absolute left-4 xl:left-10 w-60 h-[400px] border shadow-2xl flex flex-col items-center justify-center p-7 text-center -rotate-6 z-10 hover:rotate-0 hover:z-30 hover:scale-105 transition-all duration-300 cursor-pointer ${isLight ? 'iconic-card-shimmer' : ''}`}
                     style={{
@@ -456,7 +440,6 @@ export default function Dashboard({
                     </div>
                   </div>
 
-                  {/* Ticket poster */}
                   <div
                     className="absolute right-4 xl:right-10 w-60 h-[400px] shadow-2xl overflow-hidden border rotate-6 z-20 hover:rotate-0 hover:z-30 hover:scale-105 transition-all duration-300 cursor-pointer group"
                     style={{ borderColor: 'var(--border-subtle)' }}
@@ -546,9 +529,10 @@ export default function Dashboard({
                   tag: '❤️', action: () => onGoToFilms('heart'),
                 },
                 {
-                  icon: Camera, label: 'Sélection hebdo',
-                  sub:  "Tes stats de la semaine en un coup d'œil",
-                  tag: 'STATS', action: () => {},
+                  // ← MODIFIÉ : Sélection hebdo → Suggestions
+                  icon: Ticket, label: 'Suggestions du Mardi',
+                  sub:  "Partage tes films de la semaine avec la communauté",
+                  tag: 'HEBDO', action: () => onGoToSuggestions?.(),
                 },
               ].map(({ icon: Icon, label, sub, tag, action }) => (
                 <button key={label} onClick={action}
@@ -609,7 +593,7 @@ export default function Dashboard({
 
           <div className="h-px w-full mb-8" style={{ backgroundColor: 'var(--border-subtle)' }} />
 
-          {/* 2. Cartes films (inchangées) */}
+          {/* 2. Cartes films */}
           <div className="mb-10">
             <div className="overflow-hidden transition-all duration-500 ease-out"
               style={{ maxHeight: contextTitle ? '60px' : '0px', opacity: contextTitle ? 1 : 0, marginBottom: contextTitle ? '16px' : '0px' }}>
@@ -761,7 +745,7 @@ export default function Dashboard({
             )}
           </div>
 
-          {/* 3. Profil cinéphile mobile — avec 3 cards si Gold actor */}
+          {/* 3. Profil cinéphile mobile */}
           <div className="mb-12">
             <h2 className="text-2xl sm:text-3xl font-black tracking-tighter uppercase mb-6" style={ts.textPrimary}>
               Ton profil{' '}
@@ -769,7 +753,6 @@ export default function Dashboard({
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-              {/* Card Genre */}
               <div onClick={() => setProfileActive(p => p === 'genre' ? null : 'genre')}
                 className={`relative rounded-2xl border p-6 overflow-hidden cursor-pointer select-none transition-all duration-500 ${isLight ? 'iconic-card-shimmer' : ''}`}
                 style={{
@@ -795,7 +778,6 @@ export default function Dashboard({
                 </div>
               </div>
 
-              {/* Card Acteur récurrent */}
               <div onClick={() => setProfileActive(p => p === 'actor' ? null : 'actor')}
                 className={`relative rounded-2xl border p-6 overflow-hidden cursor-pointer select-none transition-all duration-500 ${isLight ? 'iconic-card-shimmer' : ''}`}
                 style={{
@@ -842,7 +824,6 @@ export default function Dashboard({
                 </div>
               </div>
 
-              {/* Card Acteur Gold — seulement si y'en a */}
               {hasGoldActors && goldLoaded && (
                 <div className="sm:col-span-2">
                   {renderGoldActorCard(true)}
@@ -895,9 +876,10 @@ export default function Dashboard({
                   key: 'heart', action: () => onGoToFilms('heart'),
                 },
                 {
-                  icon: Camera, label: 'Sélection', labelAccent: 'Hebdo',
-                  sub: 'Découvre tes stats',
-                  key: 'stats', action: () => {},
+                  // ← MODIFIÉ : Suggestions du mardi
+                  icon: Ticket, label: 'Suggestions', labelAccent: 'Mardi',
+                  sub: 'Partage tes films de la semaine',
+                  key: 'suggestions', action: () => onGoToSuggestions?.(),
                 },
               ].map(({ icon: Icon, label, labelAccent, sub, key, action }) => (
                 <button key={key} onClick={() => handleBtnClick(key, action)}
