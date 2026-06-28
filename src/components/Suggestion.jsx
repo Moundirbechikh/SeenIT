@@ -609,7 +609,7 @@ export default function Suggestion({ onBack, currentTheme, user }) {
             onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
           >
-            <ChevronLeft size={16} className="transition-transform duration-500 group-hover:-translate-x-1" />
+            <ChevronLeft size={16} className="transition-transform duration-500 tracking-widest group-hover:-translate-x-1" />
             Retour
           </button>
         )}
@@ -622,8 +622,8 @@ export default function Suggestion({ onBack, currentTheme, user }) {
                 style={{ color: 'var(--text-primary)' }}>
                 SUGGESTIONS
                 <br />
-                <span className="inline-block py-1 px-3 shadow-2xl mt-1 rounded-sm" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
-                  DE LA SEMAINE
+                <span className="inline-block py-2  shadow-2xl mt-1" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
+                  DE LA SEMAINE.
                 </span>
               </h1>
               <p className="text-sm font-semibold max-w-lg mt-2" style={{ color: 'var(--text-secondary)' }}>
@@ -706,13 +706,6 @@ export default function Suggestion({ onBack, currentTheme, user }) {
           <>
             {/* -- MA SÉLECTION ------------------------------------------------ */}
             <div className={`mb-16 transform transition-all duration-1000 delay-200 ease-out ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-              <div className="flex items-center gap-3 mb-6">
-                <Sparkles size={16} style={{ color: 'var(--accent-color)' }} />
-                <h2 className="text-sm font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
-                  Ma sélection
-                </h2>
-              </div>
-
               {/* -- Desktop : affichage 2 colonnes */}
               <div className="grid lg:grid-cols-[1fr_340px] gap-8">
 
