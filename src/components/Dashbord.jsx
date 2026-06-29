@@ -7,6 +7,7 @@ import {
   Award, ThumbsUp, Meh, ThumbsDown, Zap, Sparkles, Ticket
 } from 'lucide-react';
 import { fetchGoldActors } from '../utils/filmsApi';
+import Footer from '../components/Footer';
 
 const TMDB_IMG    = 'https://image.tmdb.org/t/p/w500';
 const TMDB_IMG_SM = 'https://image.tmdb.org/t/p/w200';
@@ -1027,7 +1028,8 @@ export default function Dashboard({
           </div>
         </div>
       </div>
-
+{/* --- AJOUTE LE FOOTER ICI --- */}
+<Footer />
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(8px); }

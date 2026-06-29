@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clapperboard, Film, Ticket, PlayCircle, Star, Popcorn, Stamp, X } from 'lucide-react';
+import Footer from '../components/Footer'; // <-- IMPORT DU FOOTER
 
 // --- HELPER : classes texte adaptées au thème ---
 function useThemeStyles() {
@@ -65,8 +66,9 @@ const LandingPage = () => {
   const toggleTicket  = key  => setActiveTicket( p => p === key  ? null : key);
   const toggleFeature = idx  => setActiveFeature(p => p === idx  ? null : idx);
 
+  // Ajout de flex flex-col pour que le footer se place bien en bas
   return (
-    <div className="flex-1 w-full relative transition-colors duration-700" style={ts.bgMain}>
+    <div className="flex-1 w-full relative transition-colors duration-700 flex flex-col" style={ts.bgMain}>
 
       {/* Popcorns déco */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -374,6 +376,9 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* ══════════════ FOOTER ══════════════ */}
+      <Footer />
 
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes fadeIn {
