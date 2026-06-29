@@ -45,7 +45,7 @@ export default function Footer() {
 
         {/* ── COLONNE 3 : Portfolio / Crédits ── */}
 {/* ── Attribution Portfolio ── */}
-<div className="flex flex-col items-center  gap-3">
+<div className="flex flex-row items-center">
           <p className="text-[14px] font-black uppercase tracking-tighter font-black" style={{ color: 'var(--text-muted)' }}>
             Design & Code par
           </p>
