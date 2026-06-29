@@ -388,7 +388,7 @@ export default function Dashboard({
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                       style={{ background: 'radial-gradient(ellipse at 70% 50%, color-mix(in srgb, var(--accent-color) 8%, transparent), transparent 70%)' }} />
 
-                    <div className="relative z-10 px-6 py-5">
+                    <div className="relative z-10 px-3 py-5">
                       <div className="flex items-center gap-1 mb-1">
                         <Mic2 size={14} className="transition-transform duration-300 group-hover:scale-110" style={ts.textAccent} />
                         <span className="text-[9px] font-black uppercase tracking-widest" style={ts.textMuted}>Acteur récurrent</span>
