@@ -297,13 +297,13 @@ export default function Dashboard({
             {/* GAUCHE */}
             <div className={`flex-1 text-center lg:text-left max-w-xl transform transition-all duration-1000 ease-out ${mounted ? 'translate-x-0 opacity-100' : '-translate-x-12 opacity-0'}`}>
 
-              <h1 className="flex flex-wrap items-baseline gap-0 font-black font-impact text-5xl xl:text-6xl tracking-tighter mb-3" style={ts.textPrimary}>
+              <h1 className="flex flex-wrap items-baseline gap-0 font-black  text-5xl xl:text-6xl tracking-tighter mb-3" style={ts.textPrimary}>
                 RAVI DE TE REVOIR,
                 <span className="text-7xl xl:text-8xl inline-block shadow-2xl  tracking-tighter py-2 break-all max-w-full"
                   style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>
                   {userName}
                 </span>
-                <span className="text-7xl xl:text-8xl inline-block shadow-2xl leading-[0.8] tracking-tighter" style={ts.textAccent}>.</span>
+                <span className="text-7xl xl:text-8xl inline-block font-elegant shadow-2xl leading-[0.8] tracking-tighter" style={ts.textAccent}>.</span>
                 <IconicBadge />
               </h1>
 
