@@ -250,7 +250,7 @@ export default function Dashboard({
 
           {/* Infos */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1 mb-1">
+            <div className="flex items-left gap-1 mb-1">
               <Sparkles size={9} style={{ color: '#C9960C' }} />
               <span className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: '#C9960C' }}>
                 Acteur Gold
