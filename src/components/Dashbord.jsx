@@ -299,7 +299,7 @@ export default function Dashboard({
 
               <h1 className="flex flex-wrap items-baseline gap-0 font-black  text-5xl xl:text-6xl tracking-tighter mb-3" style={ts.textPrimary}>
                 RAVI DE TE REVOIR,
-                <span className="text-7xl xl:text-8xl inline-block shadow-2xl  tracking-tighter py-2 break-all max-w-full font-brut"
+                <span className="text-7xl xl:text-8xl inline-block shadow-2xl  tracking-tighter py-2 break-all max-w-full font-brut font-black"
                   style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>
                   {userName}
                 </span>
