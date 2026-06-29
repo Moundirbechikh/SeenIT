@@ -14,6 +14,22 @@ export default function Info({ onClose }) {
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-8 md:p-12 lg:p-20 transition-all duration-500"
       onClick={handleBackdropClick}
     >
+            {/* Styles personnalisés pour la scrollbar du modal */}
+            <style dangerouslySetInnerHTML={{__html: `
+        .modal-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .modal-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .modal-scrollbar::-webkit-scrollbar-thumb {
+          background: color-mix(in srgb, var(--accent-color) 40%, transparent);
+          border-radius: 10px;
+        }
+        .modal-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: var(--accent-color);
+        }
+      `}} />
       {/* ── Conteneur Principal Flottant ── */}
       <div 
         className="relative w-full max-w-5xl h-full max-h-[90vh] rounded-3xl border shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300"
