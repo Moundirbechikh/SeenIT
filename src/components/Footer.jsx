@@ -14,7 +14,8 @@ export default function Footer() {
         </span>
       </div>
 
-      <div className="relative z-10  mx-auto px-6 py-16  w-full grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-center">
+      {/* FIX : Réduction du py-16 à py-8 sur mobile pour compacter, et réduction des gaps */}
+      <div className="relative z-10 mx-auto px-6 py-8 md:py-12 w-full grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10 lg:gap-12 items-center">
         
         {/* ── COLONNE 1 : Marque SeenIt ── */}
         <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left">
@@ -28,25 +29,33 @@ export default function Footer() {
         </div>
 
         {/* ── COLONNE 2 : Disclaimer TMDB & Légal ── */}
-        <div className="md:col-span-5 flex flex-col items-center md:items-start text-center md:text-left border-y md:border-y-0 md:border-x py-8 md:py-0 md:px-10" style={{ borderColor: 'var(--border-subtle)' }}>
-          <div className="flex items-center gap-3 mb-4">
-            <h4 className="text-xl font-black font-logo py-2  tracking-tighter" style={{ color: 'var(--text-inverse)',backgroundColor: 'var(--accent-color)' }}>
+        <div className="md:col-span-5 flex flex-col items-center md:items-start text-center md:text-left border-y md:border-y-0 md:border-x py-6 md:py-0 md:px-10" style={{ borderColor: 'var(--border-subtle)' }}>
+          
+          {/* FIX : Ajout du logo TMDB avec la même hauteur que le bloc texte */}
+          <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
+            <h4 className="h-10 px-3 flex items-center text-xl font-black font-logo tracking-tighter" style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>
               Powered by TMDB
             </h4>
+            <img 
+              src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_2-d537fb228cb3fd90cae146c2466082c33f2e597f451eea22f4640ca4fcbb5182.svg" 
+              alt="TMDB Logo" 
+              className="h-10 w-10 object-contain"
+            />
           </div>
+
           <p className="text-xs font-bold leading-relaxed mb-5 opacity-70" style={{ color: 'var(--text-secondary)' }}>
             Cette plateforme utilise l'API TMDB pour récupérer l'intégralité des affiches et métadonnées cinématographiques. Tous les droits relatifs aux œuvres appartiennent à The Movie Database (TMDB) et à leurs propriétaires respectifs. 
           </p>
-          <div className="inline-block px-4 py-2 rounded-lg text-[10px] lg:text-[12px] font-black uppercase tracking-tighter font-black border shadow-sm" 
+          <div className="inline-block px-4 py-2 rounded-lg text-[10px] lg:text-[12px] font-black uppercase tracking-tighter border shadow-sm" 
                style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
             Projet à but strictement non commercial
           </div>
         </div>
 
         {/* ── COLONNE 3 : Portfolio / Crédits ── */}
-{/* ── Attribution Portfolio ── */}
-<div className="flex flex-col items-center  gap-3">
-          <p className="text-[14px] font-black uppercase tracking-tighter font-black" style={{ color: 'var(--text-muted)' }}>
+        {/* FIX : Ajout de md:col-span-3 et centrage vertical/horizontal pour desktop */}
+        <div className="md:col-span-3 flex flex-col items-center justify-center h-full gap-3">
+          <p className="text-[14px] font-black uppercase tracking-tighter" style={{ color: 'var(--text-muted)' }}>
             Design & Code par
           </p>
           <a href="MON_LIEN_PORTFOLIO_ICI" target="_blank" rel="noopener noreferrer" 
@@ -54,7 +63,7 @@ export default function Footer() {
             <img 
               src={portfolioLogo} 
               alt="Mon Portfolio" 
-              className="h-14 w-fit object-contain rounded-md shadow-sm border"
+              className="h-14 w-auto object-contain rounded-md shadow-sm border"
               style={{ borderColor: 'var(--border-subtle)' }}
             />
           </a>
