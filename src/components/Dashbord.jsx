@@ -174,101 +174,106 @@ export default function Dashboard({
       ? `${TMDB_IMG_SM}${currentGoldActor.actorImg}`
       : '';
 
-    return (
-      <div
-        onClick={() => onGoToFilmsByActor?.(currentGoldActor.actorName)}
-        className={`group relative rounded-2xl border overflow-hidden cursor-pointer select-none transition-all duration-500 ${isLight ? 'iconic-card-shimmer' : ''}`}
-        style={{
-          backgroundColor: 'var(--card-color)',
-          borderColor: profileActive === 'gold' ? 'rgba(201,150,12,0.5)' : 'var(--border-subtle)',
-          transform:  profileActive === 'gold' ? 'translateY(-4px)' : 'translateY(0)',
-          boxShadow:  profileActive === 'gold' ? '0 12px 32px rgba(201,150,12,0.15)' : 'none',
-        }}
-        onMouseEnter={() => setProfileActive('gold')}
-        onMouseLeave={() => setProfileActive(null)}
-      >
-        {/* Fond radial gold au hover */}
+      return (
         <div
-          className="absolute inset-0 transition-opacity duration-500 pointer-events-none"
+          onClick={() => onGoToFilmsByActor?.(currentGoldActor.actorName)}
+          className={`group relative rounded-2xl border overflow-hidden cursor-pointer select-none transition-all duration-500 flex flex-col ${isLight ? 'iconic-card-shimmer' : ''}`}
           style={{
-            background: 'radial-gradient(ellipse at 70% 50%, rgba(201,150,12,0.1), transparent 70%)',
-            opacity: profileActive === 'gold' ? 1 : 0,
+            backgroundColor: 'var(--card-color)',
+            borderColor: profileActive === 'gold' ? 'rgba(201,150,12,0.5)' : 'var(--border-subtle)',
+            transform:  profileActive === 'gold' ? 'translateY(-4px)' : 'translateY(0)',
+            boxShadow:  profileActive === 'gold' ? '0 12px 32px rgba(201,150,12,0.15)' : 'none',
           }}
-        />
-
-        {/* Pagination dots */}
-        {goldActors.length > 1 && (
-          <div className="absolute top-3 right-3 flex gap-1 z-10">
-            {goldActors.map((_, i) => (
-              <div key={i}
-                className="h-1 rounded-full transition-all duration-300"
-                style={{
-                  width: i === goldIndex ? '14px' : '4px',
-                  backgroundColor: i === goldIndex ? '#C9960C' : 'rgba(201,150,12,0.25)',
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Contenu — même padding que les autres cartes desktop */}
-        <div className="relative z-10 flex items-center gap-4 px-6 py-5">
-          {/* Avatar */}
-          <div className="relative shrink-0">
-            <div
-              className="w-14 h-14 rounded-full overflow-hidden border-2 transition-all duration-500"
-              style={{
-                borderColor: '#C9960C',
-                boxShadow: profileActive === 'gold'
-                  ? '0 0 16px rgba(201,150,12,0.5)'
-                  : '0 0 8px rgba(201,150,12,0.3)',
-              }}
-            >
-              {imgSrc ? (
-                <img
-                  src={imgSrc}
-                  alt={currentGoldActor.actorName}
-                  className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-110"
+          onMouseEnter={() => setProfileActive('gold')}
+          onMouseLeave={() => setProfileActive(null)}
+        >
+          {/* Fond radial gold au hover */}
+          <div
+            className="absolute inset-0 transition-opacity duration-500 pointer-events-none"
+            style={{
+              background: 'radial-gradient(ellipse at 70% 50%, rgba(201,150,12,0.1), transparent 70%)',
+              opacity: profileActive === 'gold' ? 1 : 0,
+            }}
+          />
+  
+          {/* Pagination dots */}
+          {goldActors.length > 1 && (
+            <div className="absolute top-4 right-4 flex gap-1 z-10">
+              {goldActors.map((_, i) => (
+                <div key={i}
+                  className="h-1 rounded-full transition-all duration-300"
+                  style={{
+                    width: i === goldIndex ? '14px' : '4px',
+                    backgroundColor: i === goldIndex ? '#C9960C' : 'rgba(201,150,12,0.25)',
+                  }}
                 />
-              ) : (
-                <div
-                  className="w-full h-full flex items-center justify-center text-xl font-black"
-                  style={{ backgroundColor: 'rgba(201,150,12,0.15)', color: '#C9960C' }}
-                >
-                  {currentGoldActor.actorName.charAt(0)}
-                </div>
-              )}
+              ))}
             </div>
-            <div
-              className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
-              style={{ backgroundColor: '#C9960C', borderColor: 'var(--bg-color)' }}
-            >
-              <Heart size={9} fill="white" style={{ color: 'white' }} />
-            </div>
-          </div>
-
-          {/* Infos */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Sparkles size={9} style={{ color: '#C9960C' }} />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: '#C9960C' }}>
+          )}
+  
+          {/* Contenu restructuré en colonnes */}
+          <div className="relative z-10 px-5 py-5 flex flex-col h-full justify-between">
+            
+            {/* Titre en haut */}
+            <div className="flex items-center gap-1.5 mb-4 pr-8">
+              <Sparkles size={14} style={{ color: '#C9960C' }} />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: '#C9960C' }}>
                 Acteur Gold
               </span>
             </div>
-            <p
-              className="text-xl font-black tracking-tighter leading-none mb-1 truncate transition-colors duration-300"
-              style={{ color: profileActive === 'gold' ? '#C9960C' : 'var(--text-primary)' }}
-            >
-              {currentGoldActor.actorName}
-            </p>
-            <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-              Voir ses films
-              <ChevronRight size={10} className="group-hover:translate-x-1 transition-transform duration-300" style={{ color: '#C9960C' }} />
-            </p>
+  
+            <div className="flex flex-col gap-3">
+              {/* Avatar en haut à gauche sous le titre */}
+              <div className="relative shrink-0 w-14 h-14 self-start">
+                <div
+                  className="w-full h-full rounded-full overflow-hidden border-2 transition-all duration-500"
+                  style={{
+                    borderColor: '#C9960C',
+                    boxShadow: profileActive === 'gold'
+                      ? '0 0 16px rgba(201,150,12,0.5)'
+                      : '0 0 8px rgba(201,150,12,0.3)',
+                  }}
+                >
+                  {imgSrc ? (
+                    <img
+                      src={imgSrc}
+                      alt={currentGoldActor.actorName}
+                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center justify-center text-xl font-black"
+                      style={{ backgroundColor: 'rgba(201,150,12,0.15)', color: '#C9960C' }}
+                    >
+                      {currentGoldActor.actorName.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <div
+                  className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
+                  style={{ backgroundColor: '#C9960C', borderColor: 'var(--bg-color)' }}
+                >
+                  <Heart size={10} fill="white" style={{ color: 'white' }} />
+                </div>
+              </div>
+  
+              {/* Nom et infos en plein largeur */}
+              <div className="w-full mt-1">
+                <p
+                  className="text-xl sm:text-2xl font-black tracking-tighter leading-none break-words mb-2 transition-colors duration-300"
+                  style={{ color: profileActive === 'gold' ? '#C9960C' : 'var(--text-primary)' }}
+                >
+                  {currentGoldActor.actorName}
+                </p>
+                <p className="text-xs sm:text-sm font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                  Voir ses films
+                  <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" style={{ color: '#C9960C' }} />
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
   };
 
   return (
@@ -371,7 +376,7 @@ export default function Dashboard({
 
                   {/* ── Card Acteur récurrent ── */}
                   <div
-                    className={`group relative rounded-2xl border overflow-hidden cursor-default transition-all duration-300 ${isLight ? 'iconic-card-shimmer' : ''}`}
+                    className={`group relative rounded-2xl border overflow-hidden cursor-default transition-all duration-300 flex flex-col ${isLight ? 'iconic-card-shimmer' : ''}`}
                     style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)' }}
                     onMouseEnter={e => {
                       e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--accent-color) 40%, transparent)';
@@ -387,17 +392,20 @@ export default function Dashboard({
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                       style={{ background: 'radial-gradient(ellipse at 70% 50%, color-mix(in srgb, var(--accent-color) 8%, transparent), transparent 70%)' }} />
 
-                    <div className="relative z-10 px-6 py-5">
-                      <div className="flex items-center gap-2 mb-3">
+                    {/* Conteneur principal restructuré */}
+                    <div className="relative z-10 px-5 py-5 flex flex-col h-full justify-between">
+                      
+                      {/* En-tête : Titre isolé en haut */}
+                      <div className="flex items-center gap-2 mb-4">
                         <Mic2 size={14} className="transition-transform duration-300 group-hover:scale-110" style={ts.textAccent} />
-                        <span className="text-[9px] font-black uppercase tracking-widest" style={ts.textMuted}>Acteur récurrent</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest" style={ts.textMuted}>Acteur récurrent</span>
                       </div>
 
                       {favoriteActorEntry ? (
-                        <div className="flex items-center gap-3">
-                          {/* Avatar */}
-                          <div className="relative shrink-0">
-                            <div className="w-14 h-14 rounded-full overflow-hidden border-2 transition-colors duration-300"
+                        <div className="flex flex-col gap-3">
+                          {/* Image isolée en haut à gauche */}
+                          <div className="relative shrink-0 w-14 h-14 self-start">
+                            <div className="w-full h-full rounded-full overflow-hidden border-2 transition-colors duration-300 shadow-sm"
                                  style={{ borderColor: 'var(--border-medium)' }}>
                               {favoriteActorImg
                                 ? <img src={favoriteActorImg} alt={favoriteActor}
@@ -408,24 +416,25 @@ export default function Dashboard({
                                   </div>
                               }
                             </div>
-                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center border"
+                            <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
                                  style={{ backgroundColor: 'var(--accent-color)', borderColor: 'var(--bg-color)' }}>
-                              <Mic2 size={8} style={{ color: 'var(--text-inverse)' }} />
+                              <Mic2 size={10} style={{ color: 'var(--text-inverse)' }} />
                             </div>
                           </div>
-                          {/* Nom + compte */}
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xl font-black tracking-tighter leading-tight truncate mb-1 transition-colors duration-300 group-hover:text-[color:var(--accent-color)]"
+
+                          {/* Nom + compte : Toute la largeur dispo en dessous */}
+                          <div className="w-full mt-1">
+                            <p className="text-xl sm:text-2xl font-black tracking-tighter leading-none break-words mb-2 transition-colors duration-300 group-hover:text-[color:var(--accent-color)]"
                                style={ts.textPrimary}>
                               {favoriteActor}
                             </p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest" style={ts.textMuted}>
-                              {favoriteActorEntry.count} film{favoriteActorEntry.count > 1 ? 's' : ''} archivé{favoriteActorEntry.count > 1 ? 's' : ''}
+                            <p className="text-xs sm:text-sm font-bold uppercase tracking-widest flex gap-1" style={ts.textMuted}>
+                              <span style={ts.textAccent}>{favoriteActorEntry.count}</span> film{favoriteActorEntry.count > 1 ? 's' : ''} archivé{favoriteActorEntry.count > 1 ? 's' : ''}
                             </p>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-lg font-black tracking-tight" style={ts.textMuted}>
+                        <p className="text-sm font-black tracking-tight mt-auto" style={ts.textMuted}>
                           Archive des films pour le découvrir
                         </p>
                       )}
@@ -791,8 +800,8 @@ export default function Dashboard({
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-              {/* Genre mobile */}
-              <div onClick={() => setProfileActive(p => p === 'genre' ? null : 'genre')}
+                  {/* Genre mobile */}
+                  <div onClick={() => setProfileActive(p => p === 'genre' ? null : 'genre')}
                 className={`relative rounded-2xl border p-6 overflow-hidden cursor-pointer select-none transition-all duration-500 ${isLight ? 'iconic-card-shimmer' : ''}`}
                 style={{
                   backgroundColor: 'var(--card-color)',
@@ -816,7 +825,7 @@ export default function Dashboard({
                   </p>
                 </div>
               </div>
-
+ 
               {/* Acteur récurrent mobile */}
               <div onClick={() => setProfileActive(p => p === 'actor' ? null : 'actor')}
                 className={`relative rounded-2xl border p-6 overflow-hidden cursor-pointer select-none transition-all duration-500 ${isLight ? 'iconic-card-shimmer' : ''}`}
@@ -866,7 +875,7 @@ export default function Dashboard({
                   )}
                 </div>
               </div>
-
+ 
               {/* Gold Actor mobile */}
               {hasGoldActors && goldLoaded && (
                 <div className="sm:col-span-2">
@@ -885,7 +894,7 @@ export default function Dashboard({
                   >
                     <div className="absolute inset-0 transition-opacity duration-500 pointer-events-none"
                       style={{ background: 'radial-gradient(ellipse at 70% 50%, rgba(201,150,12,0.08), transparent 70%)', opacity: profileActive === 'gold' ? 1 : 0 }} />
-
+ 
                     {goldActors.length > 1 && (
                       <div className="absolute top-3 right-3 flex gap-1 z-10">
                         {goldActors.map((_, i) => (
@@ -894,7 +903,7 @@ export default function Dashboard({
                         ))}
                       </div>
                     )}
-
+ 
                     <div className="relative z-10 flex items-center gap-4">
                       <div className="relative shrink-0">
                         <div className="w-16 h-16 rounded-full overflow-hidden border-2 transition-all duration-500"
@@ -936,7 +945,7 @@ export default function Dashboard({
                 </div>
               )}
             </div>
-          </div>
+          </div>       
 
           {/* 4. Ajout + Boutons mobile */}
           <div className="grid grid-cols-1 gap-6 pb-8">
