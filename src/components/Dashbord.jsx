@@ -213,11 +213,11 @@ export default function Dashboard({
         )}
 
         {/* Contenu — même padding que les autres cartes desktop */}
-        <div className="relative z-10 flex items-center gap-4 px-6 py-5">
+        <div className="relative z-10 flex items-left gap-4 px-2 py-4">
           {/* Avatar */}
           <div className="relative shrink-0">
             <div
-              className="w-14 h-14 rounded-full overflow-hidden border-2 transition-all duration-500"
+              className="w-12 h-12 rounded-full overflow-hidden border-2 transition-all duration-500"
               style={{
                 borderColor: '#C9960C',
                 boxShadow: profileActive === 'gold'
@@ -257,7 +257,7 @@ export default function Dashboard({
               </span>
             </div>
             <p
-              className="text-xl font-black tracking-tighter leading-none mb-1 truncate transition-colors duration-300"
+              className="text-lg font-black tracking-tighter leading-none mb-1 break-words transition-colors duration-300"
               style={{ color: profileActive === 'gold' ? '#C9960C' : 'var(--text-primary)' }}
             >
               {currentGoldActor.actorName}
