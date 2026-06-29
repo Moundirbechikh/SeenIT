@@ -14,8 +14,8 @@ export default function Info({ onClose }) {
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-8 md:p-12 lg:p-20 transition-all duration-500"
       onClick={handleBackdropClick}
     >
-     <>            {/* Styles personnalisés pour la scrollbar du modal */}
-                  <style dangerouslySetInnerHTML={{__html: `
+      {/* Styles personnalisés pour la scrollbar du modal */}
+      <style dangerouslySetInnerHTML={{__html: `
         .modal-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
@@ -30,6 +30,7 @@ export default function Info({ onClose }) {
           background: var(--accent-color);
         }
       `}} />
+
       {/* ── Conteneur Principal Flottant ── */}
       <div 
         className="relative w-full max-w-5xl h-full max-h-[90vh] rounded-3xl border shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300"
@@ -66,8 +67,8 @@ export default function Info({ onClose }) {
           </button>
         </div>
 
-        {/* ── Contenu Scrollable ── */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-12">
+        {/* ── Contenu Scrollable avec la classe modal-scrollbar ── */}
+        <div className="flex-1 overflow-y-auto modal-scrollbar p-6 md:p-10 space-y-12">
           
           {/* Étape 1 : Ajouter un film */}
           <section className="flex flex-col md:flex-row gap-6 items-start">
@@ -136,7 +137,6 @@ export default function Info({ onClose }) {
 
         </div>
       </div>
-      </> 
     </div>
   );
 }
