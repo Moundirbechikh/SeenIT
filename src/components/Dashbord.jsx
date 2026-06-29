@@ -305,7 +305,7 @@ export default function Dashboard({
   style={{ 
     color: 'var(--text-inverse)', 
     backgroundColor: 'var(--accent-color)',
-    fontFamily: "'Archivo Black', sans-serif",
+    fontFamily: "'Anton', sans-serif",
     letterSpacing: '-0.05em' // équivalent personnalisé du tracking-tighter
   }}>
   {userName}
