@@ -37,7 +37,7 @@ export default function Footer() {
               Powered by TMDB
             </h4>
             <img 
-              src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_2-d537fb228cb3fd90cae146c2466082c33f2e597f451eea22f4640ca4fcbb5182.svg" 
+              src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" 
               alt="TMDB Logo" 
               className="h-10 w-10 object-contain"
             />
