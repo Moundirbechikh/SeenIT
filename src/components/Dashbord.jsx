@@ -398,7 +398,7 @@ export default function Dashboard({
                         <div className="flex items-center gap-3">
                           {/* Avatar */}
                           <div className="relative shrink-0">
-                            <div className="w-14 h-14 rounded-full overflow-hidden border-2 transition-colors duration-300"
+                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 transition-colors duration-300"
                                  style={{ borderColor: 'var(--border-medium)' }}>
                               {favoriteActorImg
                                 ? <img src={favoriteActorImg} alt={favoriteActor}
@@ -416,7 +416,7 @@ export default function Dashboard({
                           </div>
                           {/* Nom + compte */}
                           <div className="min-w-0 flex-1">
-                            <p className="text-xl font-black tracking-tighter leading-tight break-words mb-1 transition-colors duration-300 group-hover:text-[color:var(--accent-color)]"
+                            <p className="text-lg font-black tracking-tighter leading-tight break-words mb-1 transition-colors duration-300 group-hover:text-[color:var(--accent-color)]"
                                style={ts.textPrimary}>
                               {favoriteActor}
                             </p>
