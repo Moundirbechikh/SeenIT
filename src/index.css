@@ -1,15 +1,12 @@
 @import "tailwindcss";
 
 /* 1. Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Rye&family=Abril+Fatface&family=Ultra&family=Pirata+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Leckerli+One&display=swap');
 @theme {
   /* Tes couleurs */
   --color-slate-bg: #0f172a;
   --color-card-bg: #1e293b;
   --color-accent-gold: #f59e0b;
 
-  --font-affiche: "Rye", serif;
-  --font-fat: "Abril Fatface", serif;
-  --font-brut: "Ultra", serif;
-  --font-art: "Pirata One", cursive;
+  --font-logo: "Leckerli One", cursive;
 }

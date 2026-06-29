@@ -299,7 +299,7 @@ export default function Dashboard({
 
               <h1 className="flex flex-wrap items-baseline gap-0 font-black  text-5xl xl:text-6xl tracking-tighter mb-3" style={ts.textPrimary}>
                 RAVI DE TE REVOIR,
-                <span className="text-7xl xl:text-8xl inline-block shadow-2xl  tracking-tighter py-2 break-all max-w-full font-art font-black"
+                <span className="text-7xl xl:text-8xl inline-block shadow-2xl  tracking-tighter py-2 break-all max-w-full font-logo font-black"
                   style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>
                   {userName}
                 </span>
@@ -570,7 +570,7 @@ export default function Dashboard({
           <div className={`mb-8 pt-4 text-center transform transition-all duration-700 ease-out ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
             <h1 className="text-center font-black tracking-tighter leading-[0.95] text-5xl sm:text-6xl mb-4" style={ts.textPrimary}>
               RAVI DE TE REVOIR,<br />
-              <span className="text-5xl sm:text-6xl inline-block py-2 my-1 shadow-2xl  break-all max-w-full"
+              <span className="text-5xl sm:text-6xl inline-block py-2 my-1 shadow-2xl font-logo break-all max-w-full"
                 style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
                 {userName}
               </span>
