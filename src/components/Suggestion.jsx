@@ -622,7 +622,7 @@ export default function Suggestion({ onBack, currentTheme, user }) {
                 style={{ color: 'var(--text-primary)' }}>
                 SUGGESTIONS
                 <br />
-                <span className="inline-block py-2  shadow-2xl mt-1" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
+                <span className="inline-block py-2 font-logo shadow-2xl mt-1" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
                   DE LA SEMAINE.
                 </span>
               </h1>

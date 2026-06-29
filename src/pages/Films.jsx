@@ -200,7 +200,7 @@ export default function Films({
               ) : (
                 <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter uppercase leading-[0.9] mb-2" style={{ color: 'var(--text-primary)' }}>
                   Films <br className="sm:hidden" />DÉJÀ
-                  <span className="py-2 inline-block mt-1 sm:mt-2 ml-2 sm:ml-3 px-2 shadow-xl"
+                  <span className="py-2 inline-block mt-1 sm:mt-2 ml-2 sm:ml-3 px-2 shadow-xl font-logo"
                     style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
                     VUS
                   </span>
