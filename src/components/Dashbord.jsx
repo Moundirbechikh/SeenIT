@@ -241,7 +241,7 @@ export default function Dashboard({
               )}
             </div>
             <div
-              className="absolute -top-2.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
+              className="absolute -top-1.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
               style={{ backgroundColor: '#C9960C', borderColor: 'var(--bg-color)' }}
             >
               <Heart size={9} fill="white" style={{ color: 'white' }} />
@@ -250,7 +250,7 @@ export default function Dashboard({
 
           {/* Infos */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 mb-1">
+            <div className="flex items-center gap-1 mb-1">
               <Sparkles size={9} style={{ color: '#C9960C' }} />
               <span className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: '#C9960C' }}>
                 Acteur Gold
