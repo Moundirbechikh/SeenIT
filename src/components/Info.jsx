@@ -14,8 +14,8 @@ export default function Info({ onClose }) {
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-8 md:p-12 lg:p-20 transition-all duration-500"
       onClick={handleBackdropClick}
     >
-            {/* Styles personnalisés pour la scrollbar du modal */}
-            <style dangerouslySetInnerHTML={{__html: `
+     <>            {/* Styles personnalisés pour la scrollbar du modal */}
+                  <style dangerouslySetInnerHTML={{__html: `
         .modal-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
@@ -136,6 +136,7 @@ export default function Info({ onClose }) {
 
         </div>
       </div>
+      </> 
     </div>
   );
 }
