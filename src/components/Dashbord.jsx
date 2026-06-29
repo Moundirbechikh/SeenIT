@@ -325,7 +325,7 @@ export default function Dashboard({
               <div>
                 <h2 className="text-xl font-black tracking-tighter uppercase mb-4 flex items-center gap-3" style={ts.textPrimary}>
                   Ton profil{' '}
-                  <span className="text-md py-1 px-1" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
+                  <span className="text-md py-1 px-1 font-logo" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>
                     cinéphile
                   </span>
                 </h2>
@@ -749,7 +749,7 @@ export default function Dashboard({
           <div className="mb-12">
             <h2 className="text-2xl sm:text-3xl font-black tracking-tighter uppercase mb-6" style={ts.textPrimary}>
               Ton profil{' '}
-              <span className="inline-block px-2 shadow-xl" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>cinéphile</span>
+              <span className="inline-block px-2 font-logo shadow-xl" style={{ backgroundColor: 'var(--accent-color)', color: 'var(--text-inverse)' }}>cinéphile</span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
