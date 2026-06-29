@@ -14,7 +14,7 @@ export default function Footer() {
         </span>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 w-full grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-center">
+      <div className="relative z-10  mx-auto px-6 py-16 w-full grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-center">
         
         {/* ── COLONNE 1 : Marque SeenIt ── */}
         <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left">
@@ -45,7 +45,7 @@ export default function Footer() {
 
         {/* ── COLONNE 3 : Portfolio / Crédits ── */}
 {/* ── Attribution Portfolio ── */}
-<div className="flex flex-row items-center">
+<div className="flex flex-col items-center  gap-3">
           <p className="text-[14px] font-black uppercase tracking-tighter font-black" style={{ color: 'var(--text-muted)' }}>
             Design & Code par
           </p>
@@ -54,7 +54,7 @@ export default function Footer() {
             <img 
               src={portfolioLogo} 
               alt="Mon Portfolio" 
-              className="h-14 w-auto object-contain rounded-md shadow-sm border"
+              className="h-14 w-fit object-contain rounded-md shadow-sm border"
               style={{ borderColor: 'var(--border-subtle)' }}
             />
           </a>
