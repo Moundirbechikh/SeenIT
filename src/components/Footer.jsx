@@ -14,7 +14,7 @@ export default function Footer() {
         </span>
       </div>
 
-      <div className="relative z-10  mx-auto px-6 py-16  w-full grid grid-cols-1 md:grid-cols-1 gap-10 lg:gap-16 items-center">
+      <div className="relative z-10  mx-auto px-6 py-16  w-full grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-16 items-center">
         
         {/* ── COLONNE 1 : Marque SeenIt ── */}
         <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left">
