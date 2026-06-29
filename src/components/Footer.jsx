@@ -33,7 +33,7 @@ export default function Footer() {
           
           {/* FIX : Ajout du logo TMDB avec la même hauteur que le bloc texte */}
           <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
-            <h4 className="h-10 px-3 flex items-center text-xl font-black font-logo tracking-tighter" style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>
+            <h4 className="h-10 flex items-center text-xl font-black font-logo tracking-tighter" style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>
               Powered by TMDB
             </h4>
             <img 
