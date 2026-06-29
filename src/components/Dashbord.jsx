@@ -217,7 +217,7 @@ export default function Dashboard({
             {/* Titre en haut */}
             <div className="flex items-center gap-1.5 mb-4 pr-8">
               <Sparkles size={14} style={{ color: '#C9960C' }} />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: '#C9960C' }}>
+              <span className="text-[5px] font-black uppercase tracking-[0.2em]" style={{ color: '#C9960C' }}>
                 Acteur Gold
               </span>
             </div>
@@ -253,19 +253,19 @@ export default function Dashboard({
                   className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
                   style={{ backgroundColor: '#C9960C', borderColor: 'var(--bg-color)' }}
                 >
-                  <Heart size={10} fill="white" style={{ color: 'white' }} />
+                  <Heart size={8} fill="white" style={{ color: 'white' }} />
                 </div>
               </div>
   
               {/* Nom et infos en plein largeur */}
               <div className="w-full mt-1">
                 <p
-                  className="text-xl sm:text-2xl font-black tracking-tighter leading-none break-words mb-2 transition-colors duration-300"
+                  className="text-lg sm:text-xl font-black tracking-tighter leading-none break-words mb-2 transition-colors duration-300"
                   style={{ color: profileActive === 'gold' ? '#C9960C' : 'var(--text-primary)' }}
                 >
                   {currentGoldActor.actorName}
                 </p>
-                <p className="text-xs sm:text-sm font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-[5px] font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                   Voir ses films
                   <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" style={{ color: '#C9960C' }} />
                 </p>
@@ -398,7 +398,7 @@ export default function Dashboard({
                       {/* En-tête : Titre isolé en haut */}
                       <div className="flex items-center gap-2 mb-4">
                         <Mic2 size={14} className="transition-transform duration-300 group-hover:scale-110" style={ts.textAccent} />
-                        <span className="text-[10px] font-black uppercase tracking-widest" style={ts.textMuted}>Acteur récurrent</span>
+                        <span className="text-[5px] font-black uppercase tracking-widest" style={ts.textMuted}>Acteur récurrent</span>
                       </div>
 
                       {favoriteActorEntry ? (
@@ -418,17 +418,17 @@ export default function Dashboard({
                             </div>
                             <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
                                  style={{ backgroundColor: 'var(--accent-color)', borderColor: 'var(--bg-color)' }}>
-                              <Mic2 size={10} style={{ color: 'var(--text-inverse)' }} />
+                              <Mic2 size={8} style={{ color: 'var(--text-inverse)' }} />
                             </div>
                           </div>
 
                           {/* Nom + compte : Toute la largeur dispo en dessous */}
                           <div className="w-full mt-1">
-                            <p className="text-xl sm:text-2xl font-black tracking-tighter leading-none break-words mb-2 transition-colors duration-300 group-hover:text-[color:var(--accent-color)]"
+                            <p className="text-lg sm:text-xl font-black tracking-tighter leading-none break-words mb-2 transition-colors duration-300 group-hover:text-[color:var(--accent-color)]"
                                style={ts.textPrimary}>
                               {favoriteActor}
                             </p>
-                            <p className="text-xs sm:text-sm font-bold uppercase tracking-widest flex gap-1" style={ts.textMuted}>
+                            <p className="text-[5px] font-bold uppercase tracking-widest flex gap-1" style={ts.textMuted}>
                               <span style={ts.textAccent}>{favoriteActorEntry.count}</span> film{favoriteActorEntry.count > 1 ? 's' : ''} archivé{favoriteActorEntry.count > 1 ? 's' : ''}
                             </p>
                           </div>
