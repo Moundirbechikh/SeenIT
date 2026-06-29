@@ -213,7 +213,7 @@ export default function Dashboard({
         )}
 
         {/* Contenu — même padding que les autres cartes desktop */}
-        <div className="relative z-10 flex items-left gap-4 px-2 py-3">
+        <div className="relative z-10 flex items-center gap-4 px-2 py-3">
           {/* Avatar */}
           <div className="relative shrink-0">
             <div
