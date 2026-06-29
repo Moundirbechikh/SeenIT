@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 /* 1. Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Erica+One&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Permanent+Marker&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rye&family=Abril+Fatface&family=Ultra&family=Pirata+One&display=swap');
 @theme {
   /* Tes couleurs */
   --color-slate-bg: #0f172a;
   --color-card-bg: #1e293b;
   --color-accent-gold: #f59e0b;
 
-  /* 2. Tes nouvelles polices */
-  --font-art: "Erica One", cursive;
-  --font-tech: "Space Mono", monospace;
-  --font-brut: "Permanent Marker", cursive;
+  --font-affiche: "Rye", serif;
+  --font-fat: "Abril Fatface", serif;
+  --font-brut: "Ultra", serif;
+  --font-art: "Pirata One", cursive;
 }
