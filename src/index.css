@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Anton&family=Syne:wght@800&family=Oswald:wght@700&display=swap');
 @theme {
   /* Vos couleurs personnalisées pour SeenIt. */
   --color-slate-bg: #0f172a;
