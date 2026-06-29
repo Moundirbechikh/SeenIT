@@ -45,8 +45,8 @@ export default function Footer() {
 
         {/* ── COLONNE 3 : Portfolio / Crédits ── */}
 {/* ── Attribution Portfolio ── */}
-<div className="flex flex-col items-center md:items-end gap-3">
-          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+<div className="flex flex-col items-center  gap-3">
+          <p className="text-[14px] font-black uppercase tracking-tighter font-black" style={{ color: 'var(--text-muted)' }}>
             Design & Code par
           </p>
           <a href="MON_LIEN_PORTFOLIO_ICI" target="_blank" rel="noopener noreferrer" 
@@ -54,7 +54,7 @@ export default function Footer() {
             <img 
               src={portfolioLogo} 
               alt="Mon Portfolio" 
-              className="h-8 w-auto object-contain rounded-md shadow-sm border"
+              className="h-14 w-auto object-contain rounded-md shadow-sm border"
               style={{ borderColor: 'var(--border-subtle)' }}
             />
           </a>
