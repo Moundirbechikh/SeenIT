@@ -296,16 +296,22 @@ export default function Dashboard({
 
             {/* GAUCHE */}
             <div className={`flex-1 text-center lg:text-left max-w-xl transform transition-all duration-1000 ease-out ${mounted ? 'translate-x-0 opacity-100' : '-translate-x-12 opacity-0'}`}>
-
-              <h1 className="flex flex-wrap items-baseline gap-0 font-black text-5xl xl:text-6xl tracking-tighter mb-3" style={ts.textPrimary}>
-                RAVI DE TE REVOIR,
-                <span className="text-7xl xl:text-8xl inline-block shadow-2xl font-cinema tracking-tighter py-2 break-all max-w-full"
-                  style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>
-                  {userName}
-                </span>
-                <span className="text-7xl xl:text-8xl inline-block shadow-2xl leading-[0.8] tracking-tighter" style={ts.textAccent}>.</span>
-                <IconicBadge />
-              </h1>
+            <h1 className="flex flex-wrap items-baseline gap-0 font-black text-5xl xl:text-6xl tracking-tighter mb-3" style={ts.textPrimary}>
+  RAVI DE TE REVOIR,
+  <span 
+    className="text-7xl xl:text-8xl inline-block shadow-2xl font-impact tracking-tighter py-2 break-words max-w-full leading-[1]" 
+    style={{ 
+      color: 'var(--text-inverse)', 
+      backgroundColor: 'var(--accent-color)',
+      paddingLeft: '0.2em',
+      paddingRight: '0.2em'
+    }}
+  >
+    {userName}
+  </span>
+  <span className="text-7xl xl:text-8xl inline-block shadow-2xl leading-[0.8] tracking-tighter" style={ts.textAccent}>.</span>
+  <IconicBadge />
+</h1>
 
               <p className="text-lg font-medium leading-relaxed max-w-xl mb-5" style={ts.textSecondary}>
                 Merci d'avoir choisi SeenIt pour archiver ta passion du cinéma.<br />
