@@ -30,7 +30,7 @@ export default function Footer() {
         <div className="md:col-span-5 flex flex-col items-center md:items-start text-center md:text-left border-y md:border-y-0 md:border-x py-8 md:py-0 md:px-10" style={{ borderColor: 'var(--border-subtle)' }}>
           <div className="flex items-center gap-3 mb-4">
             <Film size={24} style={{ color: 'var(--accent-color)' }} />
-            <h4 className="text-xl font-black tracking-tighter" style={{ color: 'var(--text-primary)' }}>
+            <h4 className="text-xl font-black font-logo py-2  tracking-tighter" style={{ color: 'var(--text-primary)',backgroundColor: 'var(--card-color)' }}>
               Powered by TMDB
             </h4>
           </div>
