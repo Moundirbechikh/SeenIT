@@ -1,8 +1,7 @@
 @import "tailwindcss";
 
 /* 1. Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Anton&family=Syne:wght@800&family=Oswald:wght@700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Erica+One&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Permanent+Marker&display=swap');
 @theme {
   /* Tes couleurs */
   --color-slate-bg: #0f172a;
@@ -10,8 +9,7 @@
   --color-accent-gold: #f59e0b;
 
   /* 2. Tes nouvelles polices */
-  --font-impact: "Archivo Black", sans-serif;
-  --font-cinema: "Anton", sans-serif;
-  --font-artist: "Syne", sans-serif;
-  --font-elegant: "Oswald", sans-serif;
+  --font-art: "Erica One", cursive;
+  --font-tech: "Space Mono", monospace;
+  --font-brut: "Permanent Marker", cursive;
 }
