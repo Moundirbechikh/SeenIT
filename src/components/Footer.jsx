@@ -1,5 +1,5 @@
 import React from 'react';
-import portfolioLogo from '../assets/Logo.png'; // Vérifie que le chemin correspond à ton dossier
+import portfolioLogo from '../assets/logo.png'; // Vérifie que le chemin correspond à ton dossier
 
 export default function Footer() {
   return (
