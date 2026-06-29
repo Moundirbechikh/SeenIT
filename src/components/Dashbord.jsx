@@ -299,17 +299,10 @@ export default function Dashboard({
 
               <h1 className="flex flex-wrap items-baseline gap-0 font-black text-5xl xl:text-6xl tracking-tighter mb-3" style={ts.textPrimary}>
                 RAVI DE TE REVOIR,
-{/* Exemple avec Archivo Black */}
-<span 
-  className="text-7xl xl:text-8xl inline-block shadow-2xl py-2 break-all max-w-full"
-  style={{ 
-    color: 'var(--text-inverse)', 
-    backgroundColor: 'var(--accent-color)',
-    fontFamily: "'Anton', sans-serif",
-    letterSpacing: '-0.05em' // équivalent personnalisé du tracking-tighter
-  }}>
-  {userName}
-</span>
+                <span className="text-7xl xl:text-8xl inline-block shadow-2xl font-cinema tracking-tighter py-2 break-all max-w-full"
+                  style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>
+                  {userName}
+                </span>
                 <span className="text-7xl xl:text-8xl inline-block shadow-2xl leading-[0.8] tracking-tighter" style={ts.textAccent}>.</span>
                 <IconicBadge />
               </h1>

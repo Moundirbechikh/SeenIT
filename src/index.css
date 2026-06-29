@@ -1,11 +1,17 @@
 @import "tailwindcss";
+
+/* 1. Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Anton&family=Syne:wght@800&family=Oswald:wght@700&display=swap');
+
 @theme {
-  /* Vos couleurs personnalisées pour SeenIt. */
+  /* Tes couleurs */
   --color-slate-bg: #0f172a;
   --color-card-bg: #1e293b;
   --color-accent-gold: #f59e0b;
 
-  /* Vos polices si vous les ajoutez plus tard */
-  --font-display: "Outfit", sans-serif;
+  /* 2. Tes nouvelles polices */
+  --font-impact: "Archivo Black", sans-serif;
+  --font-cinema: "Anton", sans-serif;
+  --font-artist: "Syne", sans-serif;
+  --font-elegant: "Oswald", sans-serif;
 }
