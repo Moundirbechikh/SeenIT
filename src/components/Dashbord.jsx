@@ -567,21 +567,21 @@ export default function Dashboard({
             <div className="flex flex-col gap-3">
               {[
                 {
-                  icon: Star, label: 'Mes Favoris',
+                  icon: Star, label: 'Mes',labelAccent :'Favoris',
                   sub:  favCount > 0 ? `${favCount} film${favCount > 1 ? 's' : ''} marqué${favCount > 1 ? 's' : ''} en favori` : 'Marque des films avec ★ pour les retrouver ici',
                   tag: 'FAVS', action: () => onGoToFilms('favorite'),
                 },
                 {
-                  icon: Heart, label: 'Coups de Cœur',
+                  icon: Heart, label: 'Coups ',labelAccent :'de Cœur',
                   sub:  heartCount > 0 ? `${heartCount} film${heartCount > 1 ? 's' : ''} qui t'ont marqué` : 'Marque des films en coup de cœur',
                   tag: '❤️', action: () => onGoToFilms('heart'),
                 },
                 {
-                  icon: Ticket, label: 'Suggestions de la semaine',
+                  icon: Ticket, label: 'Suggestions de ',labelAccent :'la semaine',
                   sub:  'Partage tes films de la semaine avec la communauté',
                   tag: 'HEBDO', action: () => onGoToSuggestions?.(),
                 },
-              ].map(({ icon: Icon, label, sub, tag, action }) => (
+              ].map(({ icon: Icon, label,labelAccent, sub, tag, action }) => (
                 <button key={label} onClick={action}
                   className={`flex-1 flex items-center gap-5 px-6 py-0 rounded-2xl border transition-all duration-300 group text-left active:scale-[0.985] overflow-hidden relative ${isLight ? 'iconic-card-shimmer' : ''}`}
                   style={{ backgroundColor: 'var(--card-color)', borderColor: 'var(--border-subtle)' }}
@@ -596,6 +596,7 @@ export default function Dashboard({
                   <div className="relative z-10 flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="font-black text-2xl tracking-tighter uppercase" style={ts.textPrimary}>{label}</span>
+                      <span className="font-black text-2xl tracking-tighter uppercase" style={ts.textAccent}>{labelAccent}</span>
                       <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border opacity-40 group-hover:opacity-70 transition-opacity"
                         style={{ color: 'var(--accent-color)', borderColor: 'var(--accent-color)' }}>
                         {tag}
