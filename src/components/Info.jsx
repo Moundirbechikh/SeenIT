@@ -50,7 +50,7 @@ export default function Info({ onClose }) {
               <Film size={20} />
             </div>
             <h2 className="text-xl md:text-2xl font-black tracking-tighter" style={{ color: 'var(--text-primary)' }}>
-              Comment utiliser SeenIt ?
+              Comment utiliser <span className="py-2" style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--accent-color)' }}>SeenIt ?</span>
             </h2>
           </div>
           
