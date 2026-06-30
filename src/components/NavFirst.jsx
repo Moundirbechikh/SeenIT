@@ -65,7 +65,7 @@ export default function NavFirst({ currentTheme, setCurrentTheme, themes, isLogg
                 backgroundColor: 'rgba(201,150,12,0.08)',
               }}
             >
-              <Crown size={8} /> Iconic
+              <Crown size={8} />
             </span>
           )}
         </Link>
